@@ -1,0 +1,54 @@
+:root {
+    --shield-navy: #0b1323;
+    --shield-blue: #0ea5e9;
+    --shield-ink: #172033;
+    --shield-amber: #f59e0b;
+    --surface: #f8fafc;
+}
+
+body {
+    font-family: "Source Sans 3", sans-serif;
+    background: linear-gradient(180deg, #f8fbff 0%, #eef3f8 100%);
+    color: #1f2937;
+}
+
+.display-font {
+    font-family: "Sora", sans-serif;
+}
+
+.hero-noise {
+    background-image: radial-gradient(circle at 15% 20%, rgba(14, 165, 233, 0.18), transparent 42%), radial-gradient(circle at 85% 15%, rgba(245, 158, 11, 0.14), transparent 38%), radial-gradient(circle at 50% 90%, rgba(125, 211, 252, 0.12), transparent 40%);
+}
+
+.glass {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(10px);
+}
+
+.reveal {
+    opacity: 0;
+    transform: translateY(18px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.page-hero {
+    background: linear-gradient(140deg, #0b1323 0%, #102646 55%, #16406d 100%);
+}
+
+.grid-pattern {
+    background-image: linear-gradient(rgba(15, 23, 42, 0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(15, 23, 42, 0.06) 1px, transparent 1px);
+    background-size: 28px 28px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .reveal {
+        transition: none;
+        transform: none;
+        opacity: 1;
+    }
+}
