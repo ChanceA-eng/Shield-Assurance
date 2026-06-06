@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
@@ -22,11 +22,120 @@
     </script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="stylesheet" href="../styles.css">
-</head>
+    <script type="text/javascript">
+      (function(c,l,a,r,i,t,y){
+        c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+        t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+        y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+      })(window, document, "clarity", "script", "x2wyyrdpna");
+    </script>
+    <script>
+      (function (w, d) {
+        if (w.__shieldPosthogInit) return;
+        w.__shieldPosthogInit = true;
+        w.posthog = w.posthog || [];
+        w.posthog.init = w.posthog.init || function () {
+          (w.posthog._q = w.posthog._q || []).push(arguments);
+        };
+        var s = d.createElement("script");
+        s.async = true;
+        s.src = "https://us.i.posthog.com/static/array.js";
+        s.onload = function () {
+          if (w.posthog && typeof w.posthog.init === "function") {
+            w.posthog.init("phc_r7XFGXopDGihQPLhB9ReMVYizGMdNfifSJ5MRQHNqntN", {
+              api_host: "https://us.i.posthog.com",
+              autocapture: true,
+              capture_pageview: true,
+              capture_pageleave: true,
+              person_profiles: "identified_only"
+            });
+          }
+        };
+        d.head.appendChild(s);
+      })(window, document);
+    </script>
+    <script>
+      (function (w, d) {
+        if (w.__shieldGeoBridgeInit) return;
+        w.__shieldGeoBridgeInit = true;
+
+        function emit(eventName, payload) {
+          var data = payload || {};
+          if (w.ShieldSite && typeof w.ShieldSite.track === "function") w.ShieldSite.track(eventName, data);
+          if (w.posthog && typeof w.posthog.capture === "function") w.posthog.capture(eventName, data);
+          if (typeof w.clarity === "function") {
+            try { w.clarity("event", eventName); } catch (_) {}
+          }
+        }
+
+        var ipCacheKey = "shield_ip_geo_v1";
+        try {
+          var cached = JSON.parse(localStorage.getItem(ipCacheKey) || "null");
+          if (cached && cached.ts && Date.now() - cached.ts < 86400000) {
+            emit("geo_ip_resolved", cached.data || {});
+          } else {
+            fetch("https://ipapi.co/json/")
+              .then(function (r) { return r.ok ? r.json() : null; })
+              .then(function (ip) {
+                if (!ip) return;
+                var ipGeo = { ip: ip.ip || "", city: ip.city || "", state: ip.region || ip.region_code || "", country: ip.country_name || ip.country_code || "", postal: ip.postal || "" };
+                localStorage.setItem(ipCacheKey, JSON.stringify({ ts: Date.now(), data: ipGeo }));
+                emit("geo_ip_resolved", ipGeo);
+              })
+              .catch(function () {});
+          }
+        } catch (_) {}
+
+        function bindZipInputs() {
+          var selectors = ["#zip-code", 'input[name="zip"]', 'input[name="zip_code"]', 'input[id*="zip"]'];
+          d.querySelectorAll(selectors.join(",")).forEach(function (input) {
+            var fire = function () {
+              var zip = (input.value || "").trim();
+              if (!/^\d{5}$/.test(zip)) return;
+              emit("geo_zip_captured", { zip: zip });
+              if (typeof w.clarity === "function") {
+                try { w.clarity("set", "zip_code", zip); } catch (_) {}
+              }
+            };
+            input.addEventListener("change", fire);
+            input.addEventListener("blur", fire);
+          });
+        }
+
+        if (d.readyState === "loading") d.addEventListener("DOMContentLoaded", bindZipInputs, { once: true });
+        else bindZipInputs();
+      })(window, document);
+    </script>
+    <script>
+      (function (w, d) {
+        if (w.__shieldCompanySyncInit) return;
+        w.__shieldCompanySyncInit = true;
+        function pick(obj, keys) { for (var i = 0; i < keys.length; i += 1) { var v = obj && obj[keys[i]]; if (typeof v === "string" && v.trim()) return v.trim(); } return ""; }
+        function applyCompany(content) {
+          if (!content || typeof content !== "object") return;
+          var scope = content.company && typeof content.company === "object" ? content.company : content;
+          var phone = pick(scope, ["phone", "company_phone", "contact_phone"]);
+          var email = pick(scope, ["email", "company_email", "contact_email"]);
+          var license = pick(scope, ["az_license", "license", "company_license"]);
+          var address = pick(scope, ["mailing_address", "address", "company_address"]);
+          function textAll(selector, value) { if (!value) return; d.querySelectorAll(selector).forEach(function (el) { el.textContent = value; }); }
+          textAll("[data-site-phone-text], [data-company-phone], #footer-phone", phone);
+          textAll("[data-site-email-text], [data-company-email], #footer-email", email);
+          textAll("[data-site-az-license], [data-company-license], #footer-license", license);
+          textAll("[data-site-mailing-address], [data-company-address], #footer-address", address);
+          if (phone) { var tel = "tel:" + phone.replace(/[^\d+]/g, ""); d.querySelectorAll("[data-site-phone-link], a[href^='tel:']").forEach(function (el) { el.setAttribute("href", tel); if (el.hasAttribute("data-site-phone-link")) el.textContent = phone; }); }
+          if (email) { var mailto = "mailto:" + email; d.querySelectorAll("[data-site-email-link], a[href^='mailto:']").forEach(function (el) { el.setAttribute("href", mailto); if (el.hasAttribute("data-site-email-link")) el.textContent = email; }); }
+        }
+        function pullAndApply() { if (w.ShieldBackend && typeof w.ShieldBackend.getSiteContent === "function") w.ShieldBackend.getSiteContent().then(function (content) { if (content) applyCompany(content); if (content && content.settings) applyCompany(content.settings); }).catch(function () {}); }
+        if (d.readyState === "loading") d.addEventListener("DOMContentLoaded", pullAndApply, { once: true }); else pullAndApply();
+        setTimeout(pullAndApply, 1200);
+      })(window, document);
+    </script>
+  </head>
 <body class="antialiased">
     <header id="site-header" class="fixed inset-x-0 top-0 z-50 bg-white/85 backdrop-blur-md border-b border-slate-200/70">
         <nav class="mx-auto flex max-w-7xl items-center justify-between px-6 py-3 lg:px-8">
-            <a href="../index.html" class="flex items-center gap-3"><span class="grid h-10 w-10 place-content-center rounded-xl bg-shieldNavy text-white"><i data-lucide="shield-check" class="h-5 w-5"></i></span><span class="display-font text-lg font-extrabold">Shield Assurance <span class="text-shieldBlue">LLC</span></span></a>
+            <a href="/" class="flex items-center gap-3"><span class="grid h-10 w-10 place-content-center rounded-xl bg-shieldNavy text-white"><i data-lucide="shield-check" class="h-5 w-5"></i></span><span class="display-font text-lg font-extrabold">Shield Assurance <span class="text-shieldBlue">LLC</span></span></a>
             <div class="hidden items-center gap-7 text-sm font-semibold text-slate-700 md:flex"><a href="/services/" class="hover:text-shieldBlue">Services</a><a href="/about/" class="hover:text-shieldBlue">About</a><a href="/claims/" class="hover:text-shieldBlue">Claims</a><a href="/contact/" class="text-shieldBlue">Contact</a><a href="tel:+18005550199" data-site-phone-link class="rounded-lg border border-slate-300 px-4 py-2">Call <span data-site-phone-text>(800) 555-0199</span></a></div>
             <button id="mobile-menu-toggle" class="md:hidden text-slate-700 hover:text-slate-900 focus:outline-none ml-4" aria-label="Toggle menu" aria-expanded="false" aria-controls="mobile-menu"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" /></svg></button>
         </nav>
@@ -78,6 +187,12 @@
                             <label for="phone" class="mb-1 block text-xs font-bold uppercase tracking-wide text-slate-400">Phone Number *</label>
                             <input id="phone" name="phone" type="tel" required class="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-3 text-white placeholder:text-slate-500 focus:border-shieldBlue focus:outline-none" placeholder="(555) 555-5555">
                         </div>
+                      <div>
+                        <label for="zip-code" class="mb-1 block text-xs font-bold uppercase tracking-wide text-slate-400">Arizona ZIP Code</label>
+                        <input id="zip-code" name="zip_code" type="text" inputmode="numeric" maxlength="5" pattern="[0-9]{5}" class="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-3 text-white placeholder:text-slate-500 focus:border-shieldBlue focus:outline-none" placeholder="85719">
+                      </div>
+                    </div>
+                    <div class="mt-4 grid gap-4 sm:grid-cols-2">
                         <div>
                             <label for="coverage-type" class="mb-1 block text-xs font-bold uppercase tracking-wide text-slate-400">Coverage Type *</label>
                             <select id="coverage-type" name="coverage_type" required class="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-3 text-white focus:border-shieldBlue focus:outline-none">
@@ -105,7 +220,7 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 pb-8 border-b border-slate-800">
           <div class="space-y-3">
             <div class="flex items-center gap-2 text-white">
-              <span class="flex h-8 w-8 items-center justify-center rounded-full border border-slate-700 text-xs font-bold">SA</span>
+              <span class="grid h-8 w-8 place-content-center rounded-xl bg-slate-800 text-white"><i data-lucide="shield-check" class="h-4 w-4"></i></span>
               <span class="text-sm font-semibold tracking-wide">Shield Assurance LLC</span>
             </div>
             <p class="text-sm text-slate-400 leading-relaxed">Independent property and casualty insurance for Arizona families and businesses.</p>
@@ -118,11 +233,11 @@
           <div class="space-y-3">
             <h4 class="text-xs font-bold uppercase tracking-widest text-slate-200">Navigation</h4>
             <ul class="space-y-2 text-sm">
-              <li><a href="/index.html" class="hover:text-white transition">Home</a></li>
-              <li><a href="/about.html" class="hover:text-white transition">About</a></li>
-              <li><a href="/services.html" class="hover:text-white transition">Services</a></li>
-              <li><a href="/claims.html" class="hover:text-white transition">Claims</a></li>
-              <li><a href="/contact.html" class="hover:text-white transition">Contact</a></li>
+              <li><a href="/" class="hover:text-white transition">Home</a></li>
+              <li><a href="/about" class="hover:text-white transition">About</a></li>
+              <li><a href="/services" class="hover:text-white transition">Services</a></li>
+              <li><a href="/claims" class="hover:text-white transition">Claims</a></li>
+              <li><a href="/contact" class="hover:text-white transition">Contact</a></li>
             </ul>
           </div>
 
@@ -145,7 +260,7 @@
         </div>
 
         <div class="border-t border-slate-800 pt-6 mt-8 text-xs text-slate-500 flex flex-col md:flex-row md:justify-between gap-2">
-          <p>&copy; <span data-current-year></span> Shield Assurance LLC. All rights reserved.</p>
+          <p>&copy; <span data-current-year></span> Shield Assurance LLC. All rights reserved. <a href="/admin/" rel="nofollow" aria-label="Admin login" class="ml-2 text-xs text-slate-400 hover:text-slate-300">admin</a></p>
           <p>Coverage subject to policy terms, conditions, limitations, and exclusions. Submitting a request does not bind coverage.</p>
         </div>
       </div>
@@ -154,7 +269,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../supabase-config.js?v=20260604-2"></script>
     <script src="../backend.js?v=20260604-2"></script>
-    <script src="../app.js?v=20260604-5"></script>
+    <script src="../app.js?v=20260606-1"></script>
     <script src="../contact.js?v=20260604-2"></script>
 </body>
 </html>

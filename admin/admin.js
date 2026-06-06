@@ -48,10 +48,28 @@ document.addEventListener("DOMContentLoaded", () => {
     const carrierForm = document.getElementById("carrier-form");
     const integrationStatus = document.getElementById("integration-status");
 
+    const adminPanelButtons = Array.from(document.querySelectorAll("[data-admin-panel-target]"));
+    const adminPanels = Array.from(document.querySelectorAll("[data-admin-panel]"));
+
     const analyticsTargets = {
         unique: document.getElementById("analytics-unique-visitors"),
         views: document.getElementById("analytics-page-views"),
-        conversion: document.getElementById("analytics-conversion-rate")
+        conversion: document.getElementById("analytics-conversion-rate"),
+        avgTime: document.getElementById("analytics-average-time"),
+        formStarts: document.getElementById("analytics-form-starts"),
+        formSubmissions: document.getElementById("analytics-form-submissions"),
+        formAbandons: document.getElementById("analytics-form-abandons"),
+        formAbandonments: document.getElementById("analytics-form-abandonments"),
+        autoPrimary: document.getElementById("analytics-auto-fleet-clicks"),
+        propertyPrimary: document.getElementById("analytics-property-clicks"),
+        commercialPrimary: document.getElementById("analytics-commercial-clicks"),
+        autoSecondary: document.getElementById("analytics-auto-fleet-clicks-secondary"),
+        propertySecondary: document.getElementById("analytics-property-clicks-secondary"),
+        commercialSecondary: document.getElementById("analytics-commercial-clicks-secondary"),
+        incompleteBody: document.getElementById("analytics-incomplete-body"),
+        geoPrimary: document.getElementById("analytics-geo-breakdown"),
+        geoSecondary: document.getElementById("analytics-geo-breakdown-secondary"),
+        pathBody: document.getElementById("analytics-path-body")
     };
 
     const state = {
@@ -105,6 +123,27 @@ document.addEventListener("DOMContentLoaded", () => {
         view.backendMissing.classList.toggle("hidden", mode !== "missing");
         view.loginPanel.classList.toggle("hidden", mode !== "login");
         view.shell.classList.toggle("hidden", mode !== "shell");
+    };
+
+    const setActiveAdminPanel = (panelName) => {
+        if (adminPanels.length === 0 || adminPanelButtons.length === 0) {
+            return;
+        }
+
+        adminPanels.forEach((panel) => {
+            const next = panel.getAttribute("data-admin-panel") === panelName;
+            panel.classList.toggle("hidden", !next);
+        });
+
+        adminPanelButtons.forEach((button) => {
+            const next = button.getAttribute("data-admin-panel-target") === panelName;
+            button.classList.toggle("bg-shieldNavy", next);
+            button.classList.toggle("text-white", next);
+            button.classList.toggle("border", !next);
+            button.classList.toggle("border-slate-300", !next);
+            button.classList.toggle("text-slate-700", !next);
+            button.classList.toggle("hover:bg-slate-50", !next);
+        });
     };
 
     const readAsDataUrl = (file) => {
@@ -426,21 +465,147 @@ document.addEventListener("DOMContentLoaded", () => {
             .join("");
     };
 
+    const sumBucket = (bucket) => Object.values(bucket || {}).reduce((total, count) => total + Number(count || 0), 0);
+
+    const aggregateBucket = (bucket, keys) => keys.reduce((total, key) => total + Number((bucket && bucket[key]) || 0), 0);
+
+    const formatDuration = (seconds) => {
+        const total = Number(seconds || 0);
+        if (total < 60) {
+            return `${total}s`;
+        }
+
+        const minutes = Math.floor(total / 60);
+        const remainder = total % 60;
+        if (remainder === 0) {
+            return `${minutes}m`;
+        }
+        return `${minutes}m ${remainder}s`;
+    };
+
+    const renderGeoBreakdown = (node, bucket) => {
+        if (!node) {
+            return;
+        }
+
+        const entries = Object.entries(bucket || {}).sort((a, b) => Number(b[1] || 0) - Number(a[1] || 0));
+        if (entries.length === 0) {
+            node.innerHTML = "<p class=\"text-sm text-slate-500\">No geographic data captured yet.</p>";
+            return;
+        }
+
+        const max = Math.max(...entries.map(([, value]) => Number(value || 0)), 1);
+        node.innerHTML = entries
+            .map(([label, value]) => {
+                const width = Math.max(12, Math.round((Number(value || 0) / max) * 100));
+                return `
+                    <div class="space-y-2">
+                        <div class="flex items-center justify-between text-sm font-semibold text-slate-700">
+                            <span>${escapeHtml(label)}</span>
+                            <span>${Number(value || 0)}</span>
+                        </div>
+                        <div class="h-2 overflow-hidden rounded-full bg-slate-100">
+                            <div class="h-full rounded-full bg-shieldBlue" style="width:${width}%"></div>
+                        </div>
+                    </div>`;
+            })
+            .join("");
+    };
+
+    const renderIncompleteForms = (rows) => {
+        if (!analyticsTargets.incompleteBody) {
+            return;
+        }
+
+        if (!Array.isArray(rows) || rows.length === 0) {
+            analyticsTargets.incompleteBody.innerHTML = "<tr><td colspan=\"6\" class=\"px-4 py-5 text-sm text-slate-500\">No incomplete forms captured yet.</td></tr>";
+            return;
+        }
+
+        analyticsTargets.incompleteBody.innerHTML = rows
+            .slice(0, 25)
+            .map((row) => {
+                const prospect = [row.fullName, row.email, row.phone].filter(Boolean).join(" / ") || "Anonymous visitor";
+                return `
+                    <tr>
+                        <td class="px-4 py-3 align-top text-slate-700">${escapeHtml(formatDate(row.createdAt))}</td>
+                        <td class="px-4 py-3 align-top text-slate-700">${escapeHtml(row.region || "Unknown")} ${row.zipCode ? `<span class="block text-xs text-slate-500">${escapeHtml(row.zipCode)}</span>` : ""}</td>
+                        <td class="px-4 py-3 align-top text-slate-700">${escapeHtml(prospect)}</td>
+                        <td class="px-4 py-3 align-top text-slate-700">${escapeHtml(row.coverageType || row.intakeRoute || "general")}</td>
+                        <td class="px-4 py-3 align-top text-slate-700">${Number(row.completionPercent || 0)}%</td>
+                        <td class="px-4 py-3 align-top text-slate-700">${escapeHtml(row.lastField || "-")}</td>
+                    </tr>`;
+            })
+            .join("");
+    };
+
+    const renderPathPerformance = (viewsBucket, durationBucket) => {
+        if (!analyticsTargets.pathBody) {
+            return;
+        }
+
+        const entries = Object.entries(viewsBucket || {})
+            .map(([path, count]) => ({
+                path,
+                views: Number(count || 0),
+                seconds: Number((durationBucket && durationBucket[path]) || 0)
+            }))
+            .sort((a, b) => b.views - a.views);
+
+        if (entries.length === 0) {
+            analyticsTargets.pathBody.innerHTML = "<tr><td colspan=\"3\" class=\"px-4 py-5 text-sm text-slate-500\">No path performance data captured yet.</td></tr>";
+            return;
+        }
+
+        analyticsTargets.pathBody.innerHTML = entries
+            .slice(0, 10)
+            .map((entry) => `
+                <tr>
+                    <td class="px-4 py-3 align-top font-semibold text-slate-900">${escapeHtml(entry.path)}</td>
+                    <td class="px-4 py-3 align-top text-slate-700">${entry.views}</td>
+                    <td class="px-4 py-3 align-top text-slate-700">${escapeHtml(formatDuration(entry.seconds))}</td>
+                </tr>`)
+            .join("");
+    };
+
     const renderAnalytics = () => {
-        if (!siteApi || !analyticsTargets.unique || !analyticsTargets.views || !analyticsTargets.conversion) {
+        if (!siteApi) {
             return;
         }
 
         const analytics = siteApi.loadAnalytics();
-        const sum = (bucket) => Object.values(bucket || {}).reduce((total, count) => total + Number(count || 0), 0);
-        const unique = sum(analytics.uniqueVisitorsByDay);
-        const views = sum(analytics.pageViewsByDay);
-        const quoteClicks = sum(analytics.quoteClicksByLabel);
+        const unique = sumBucket(analytics.uniqueVisitorsByDay);
+        const views = sumBucket(analytics.pageViewsByDay);
+        const quoteClicks = sumBucket(analytics.quoteClicksByLabel);
+        const totalTime = sumBucket(analytics.pageTimeSecondsByPath);
+        const avgTime = views > 0 ? Math.round(totalTime / views) : 0;
+        const formStarts = sumBucket(analytics.formStartsById);
+        const formSubmissions = sumBucket(analytics.formSubmissionsById);
+        const activeAbandons = Array.isArray(analytics.incompleteForms) ? analytics.incompleteForms.length : 0;
+        const autoClicks = aggregateBucket(analytics.insuranceLineClicks, ["auto", "fleet", "auto-fleet", "auto_fleet"]);
+        const propertyClicks = aggregateBucket(analytics.insuranceLineClicks, ["property", "home", "home-property", "homeowners", "personal"]);
+        const commercialClicks = aggregateBucket(analytics.insuranceLineClicks, ["commercial", "business", "commercial-property"]);
         const conversion = unique > 0 ? ((quoteClicks / unique) * 100).toFixed(1) : "0.0";
 
-        analyticsTargets.unique.textContent = String(unique);
-        analyticsTargets.views.textContent = String(views);
-        analyticsTargets.conversion.textContent = `${conversion}%`;
+        if (analyticsTargets.unique) analyticsTargets.unique.textContent = String(unique);
+        if (analyticsTargets.views) analyticsTargets.views.textContent = String(views);
+        if (analyticsTargets.conversion) analyticsTargets.conversion.textContent = `${conversion}%`;
+        if (analyticsTargets.avgTime) analyticsTargets.avgTime.textContent = formatDuration(avgTime);
+        if (analyticsTargets.formStarts) analyticsTargets.formStarts.textContent = String(formStarts);
+        if (analyticsTargets.formSubmissions) analyticsTargets.formSubmissions.textContent = String(formSubmissions);
+        if (analyticsTargets.formAbandons) analyticsTargets.formAbandons.textContent = String(activeAbandons);
+        if (analyticsTargets.formAbandonments) analyticsTargets.formAbandonments.textContent = String(activeAbandons);
+        if (analyticsTargets.autoPrimary) analyticsTargets.autoPrimary.textContent = String(autoClicks);
+        if (analyticsTargets.propertyPrimary) analyticsTargets.propertyPrimary.textContent = String(propertyClicks);
+        if (analyticsTargets.commercialPrimary) analyticsTargets.commercialPrimary.textContent = String(commercialClicks);
+        if (analyticsTargets.autoSecondary) analyticsTargets.autoSecondary.textContent = String(autoClicks);
+        if (analyticsTargets.propertySecondary) analyticsTargets.propertySecondary.textContent = String(propertyClicks);
+        if (analyticsTargets.commercialSecondary) analyticsTargets.commercialSecondary.textContent = String(commercialClicks);
+
+        renderIncompleteForms(Array.isArray(analytics.incompleteForms) ? analytics.incompleteForms : []);
+        renderGeoBreakdown(analyticsTargets.geoPrimary, analytics.geographyByRegion);
+        renderGeoBreakdown(analyticsTargets.geoSecondary, analytics.geographyByRegion);
+        renderPathPerformance(analytics.pageViewsByPath, analytics.pageTimeSecondsByPath);
     };
 
     const hydrateIntegrationForm = async () => {
@@ -581,8 +746,23 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         setView("shell");
+        setActiveAdminPanel("overview");
         await hydrateFromBackend();
     };
+
+    if (adminPanelButtons.length > 0) {
+        adminPanelButtons.forEach((button) => {
+            button.addEventListener("click", () => {
+                const next = button.getAttribute("data-admin-panel-target") || "overview";
+                setActiveAdminPanel(next);
+            });
+        });
+        setActiveAdminPanel("overview");
+    }
+
+    document.addEventListener("shield:analytics-updated", () => {
+        renderAnalytics();
+    });
 
     if (loginForm) {
         loginForm.addEventListener("submit", async (event) => {
@@ -599,9 +779,15 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     if (logoutButton) {
-        logoutButton.addEventListener("click", async () => {
-            await backend.signOut();
-            setView("login");
+        logoutButton.addEventListener("click", async (event) => {
+            if (event) {
+                event.preventDefault();
+            }
+            try {
+                await backend.signOut();
+            } finally {
+                window.location.assign("/");
+            }
         });
     }
 

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
@@ -6,11 +6,11 @@
     <title>About Shield Assurance LLC | Arizona Property & Casualty Insurance Agency</title>
     <meta name="description" content="Learn about Shield Assurance LLC, an independent Arizona property and casualty insurance agency serving families and small businesses with home, auto, and commercial coverage support.">
     <meta name="robots" content="index,follow">
-    <link rel="canonical" href="https://www.shieldassurancellc.com/about.html">
+    <link rel="canonical" href="https://www.shieldassurancellc.com/about">
     <meta property="og:title" content="About Shield Assurance LLC | Arizona Property & Casualty Insurance Agency">
     <meta property="og:description" content="Independent Arizona property and casualty insurance advisors serving families and small businesses.">
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://www.shieldassurancellc.com/about.html">
+    <meta property="og:url" content="https://www.shieldassurancellc.com/about">
 
     <link rel="manifest" href="/manifest.webmanifest">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -22,15 +22,103 @@
     </script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="stylesheet" href="styles.css">
-</head>
+    <script type="text/javascript">
+        (function(c,l,a,r,i,t,y){
+            c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+            t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+            y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+        })(window, document, "clarity", "script", "x2wyyrdpna");
+    </script>
+        <script>
+            (function (w, d) {
+                if (w.__shieldPosthogInit) return;
+                w.__shieldPosthogInit = true;
+                w.posthog = w.posthog || [];
+                w.posthog.init = w.posthog.init || function () {
+                    (w.posthog._q = w.posthog._q || []).push(arguments);
+                };
+                var s = d.createElement("script");
+                s.async = true;
+                s.src = "https://us.i.posthog.com/static/array.js";
+                s.onload = function () {
+                    if (w.posthog && typeof w.posthog.init === "function") {
+                        w.posthog.init("phc_r7XFGXopDGihQPLhB9ReMVYizGMdNfifSJ5MRQHNqntN", {
+                            api_host: "https://us.i.posthog.com",
+                            autocapture: true,
+                            capture_pageview: true,
+                            capture_pageleave: true,
+                            person_profiles: "identified_only"
+                        });
+                    }
+                };
+                d.head.appendChild(s);
+            })(window, document);
+        </script>
+        <script>
+            (function (w, d) {
+                if (w.__shieldGeoBridgeInit) return;
+                w.__shieldGeoBridgeInit = true;
+                function emit(eventName, payload) {
+                    var data = payload || {};
+                    if (w.ShieldSite && typeof w.ShieldSite.track === "function") w.ShieldSite.track(eventName, data);
+                    if (w.posthog && typeof w.posthog.capture === "function") w.posthog.capture(eventName, data);
+                    if (typeof w.clarity === "function") {
+                        try { w.clarity("event", eventName); } catch (_) {}
+                    }
+                }
+                var ipCacheKey = "shield_ip_geo_v1";
+                try {
+                    var cached = JSON.parse(localStorage.getItem(ipCacheKey) || "null");
+                    if (cached && cached.ts && Date.now() - cached.ts < 86400000) {
+                        emit("geo_ip_resolved", cached.data || {});
+                    } else {
+                        fetch("https://ipapi.co/json/")
+                            .then(function (r) { return r.ok ? r.json() : null; })
+                            .then(function (ip) {
+                                if (!ip) return;
+                                var ipGeo = { ip: ip.ip || "", city: ip.city || "", state: ip.region || ip.region_code || "", country: ip.country_name || ip.country_code || "", postal: ip.postal || "" };
+                                localStorage.setItem(ipCacheKey, JSON.stringify({ ts: Date.now(), data: ipGeo }));
+                                emit("geo_ip_resolved", ipGeo);
+                            })
+                            .catch(function () {});
+                    }
+                } catch (_) {}
+            })(window, document);
+        </script>
+        <script>
+            (function (w, d) {
+                if (w.__shieldCompanySyncInit) return;
+                w.__shieldCompanySyncInit = true;
+                function pick(obj, keys) { for (var i = 0; i < keys.length; i += 1) { var v = obj && obj[keys[i]]; if (typeof v === "string" && v.trim()) return v.trim(); } return ""; }
+                function applyCompany(content) {
+                    if (!content || typeof content !== "object") return;
+                    var scope = content.company && typeof content.company === "object" ? content.company : content;
+                    var phone = pick(scope, ["phone", "company_phone", "contact_phone"]);
+                    var email = pick(scope, ["email", "company_email", "contact_email"]);
+                    var license = pick(scope, ["az_license", "license", "company_license"]);
+                    var address = pick(scope, ["mailing_address", "address", "company_address"]);
+                    function textAll(selector, value) { if (!value) return; d.querySelectorAll(selector).forEach(function (el) { el.textContent = value; }); }
+                    textAll("[data-site-phone-text], [data-company-phone], #footer-phone", phone);
+                    textAll("[data-site-email-text], [data-company-email], #footer-email", email);
+                    textAll("[data-site-az-license], [data-company-license], #footer-license", license);
+                    textAll("[data-site-mailing-address], [data-company-address], #footer-address", address);
+                    if (phone) { var tel = "tel:" + phone.replace(/[^\d+]/g, ""); d.querySelectorAll("[data-site-phone-link], a[href^='tel:']").forEach(function (el) { el.setAttribute("href", tel); if (el.hasAttribute("data-site-phone-link")) el.textContent = phone; }); }
+                    if (email) { var mailto = "mailto:" + email; d.querySelectorAll("[data-site-email-link], a[href^='mailto:']").forEach(function (el) { el.setAttribute("href", mailto); if (el.hasAttribute("data-site-email-link")) el.textContent = email; }); }
+                }
+                function pullAndApply() { if (w.ShieldBackend && typeof w.ShieldBackend.getSiteContent === "function") w.ShieldBackend.getSiteContent().then(function (content) { if (content) applyCompany(content); if (content && content.settings) applyCompany(content.settings); }).catch(function () {}); }
+                if (d.readyState === "loading") d.addEventListener("DOMContentLoaded", pullAndApply, { once: true }); else pullAndApply();
+                setTimeout(pullAndApply, 1200);
+            })(window, document);
+        </script>
+    </head>
 <body class="antialiased">
     <header id="site-header" class="fixed inset-x-0 top-0 z-50 bg-white/85 backdrop-blur-md border-b border-slate-200/70">
         <nav class="mx-auto flex max-w-7xl items-center justify-between px-6 py-3 lg:px-8">
-            <a href="index.html" class="flex items-center gap-3"><span class="grid h-10 w-10 place-content-center rounded-xl bg-shieldNavy text-white"><i data-lucide="shield-check" class="h-5 w-5"></i></span><span class="display-font text-lg font-extrabold">Shield Assurance <span class="text-shieldBlue">LLC</span></span></a>
-            <div class="hidden items-center gap-7 text-sm font-semibold text-slate-700 md:flex"><a href="/services.html" class="hover:text-shieldBlue">Services</a><a href="/about.html" class="text-shieldBlue">About</a><a href="/claims.html" class="hover:text-shieldBlue">Claims</a><a href="/contact.html" class="hover:text-shieldBlue">Contact</a><a href="tel:+18005550199" data-site-phone-link class="rounded-lg border border-slate-300 px-4 py-2">Call <span data-site-phone-text>(800) 555-0199</span></a><a href="/contact.html" data-analytics-quote="Header Quote CTA" class="rounded-lg bg-shieldNavy px-4 py-2 text-white">Get a Quote</a></div>
+            <a href="/" class="flex items-center gap-3"><span class="grid h-10 w-10 place-content-center rounded-xl bg-shieldNavy text-white"><i data-lucide="shield-check" class="h-5 w-5"></i></span><span class="display-font text-lg font-extrabold">Shield Assurance <span class="text-shieldBlue">LLC</span></span></a>
+            <div class="hidden items-center gap-7 text-sm font-semibold text-slate-700 md:flex"><a href="/services" class="hover:text-shieldBlue">Services</a><a href="/about" class="text-shieldBlue">About</a><a href="/claims" class="hover:text-shieldBlue">Claims</a><a href="/contact" class="hover:text-shieldBlue">Contact</a><a href="tel:+18005550199" data-site-phone-link class="rounded-lg border border-slate-300 px-4 py-2">Call <span data-site-phone-text>(800) 555-0199</span></a><a href="/contact" data-analytics-quote="Header Quote CTA" class="rounded-lg bg-shieldNavy px-4 py-2 text-white">Get a Quote</a></div>
             <button id="mobile-menu-toggle" class="md:hidden text-slate-700 hover:text-slate-900 focus:outline-none ml-4" aria-label="Toggle menu" aria-expanded="false" aria-controls="mobile-menu"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" /></svg></button>
         </nav>
-        <div id="mobile-menu" class="hidden border-t border-slate-200 bg-white px-6 py-4 md:hidden"><div class="grid gap-2 text-sm font-semibold text-slate-700"><a href="/services.html" class="rounded-md px-2 py-2 hover:bg-slate-100">Services</a><a href="/about.html" class="rounded-md px-2 py-2 hover:bg-slate-100">About</a><a href="/claims.html" class="rounded-md px-2 py-2 hover:bg-slate-100">Claims</a><a href="/contact.html" class="rounded-md px-2 py-2 hover:bg-slate-100">Contact</a></div></div>
+        <div id="mobile-menu" class="hidden border-t border-slate-200 bg-white px-6 py-4 md:hidden"><div class="grid gap-2 text-sm font-semibold text-slate-700"><a href="/services" class="rounded-md px-2 py-2 hover:bg-slate-100">Services</a><a href="/about" class="rounded-md px-2 py-2 hover:bg-slate-100">About</a><a href="/claims" class="rounded-md px-2 py-2 hover:bg-slate-100">Claims</a><a href="/contact" class="rounded-md px-2 py-2 hover:bg-slate-100">Contact</a></div></div>
     </header>
 
     <main>
@@ -80,7 +168,7 @@
                 </div>
 
                 <div class="text-center reveal">
-                    <a href="contact.html" data-analytics-quote="About Midpage CTA" class="inline-flex items-center justify-center px-6 py-3 border border-transparent text-sm font-semibold rounded-lg text-white bg-slate-900 hover:bg-slate-800 transition shadow-sm">
+                    <a href="/contact" data-analytics-quote="About Midpage CTA" class="inline-flex items-center justify-center px-6 py-3 border border-transparent text-sm font-semibold rounded-lg text-white bg-slate-900 hover:bg-slate-800 transition shadow-sm">
                         Schedule a Coverage Review &rarr;
                     </a>
                 </div>
@@ -106,7 +194,7 @@
                 <p class="text-slate-600 leading-relaxed mb-6">
                     As an independent professional operating in Arizona, our commitment is simple: build transparent, reliable insurance programs for your vehicles, homes, and business operations. Shield Assurance LLC is built on clarity, responsiveness, and practical risk guidance focused on protecting your physical assets.
                 </p>
-                <a href="contact.html" data-analytics-quote="About Closing CTA" class="inline-flex items-center justify-center px-6 py-3 border border-transparent text-sm font-semibold rounded-lg text-white bg-slate-900 hover:bg-slate-800 transition shadow-sm">
+                <a href="/contact" data-analytics-quote="About Closing CTA" class="inline-flex items-center justify-center px-6 py-3 border border-transparent text-sm font-semibold rounded-lg text-white bg-slate-900 hover:bg-slate-800 transition shadow-sm">
                     Connect with an Advisor &rarr;
                 </a>
             </div>
@@ -118,7 +206,7 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 pb-8 border-b border-slate-800">
           <div class="space-y-3">
             <div class="flex items-center gap-2 text-white">
-              <span class="flex h-8 w-8 items-center justify-center rounded-full border border-slate-700 text-xs font-bold">SA</span>
+              <span class="grid h-8 w-8 place-content-center rounded-xl bg-slate-800 text-white"><i data-lucide="shield-check" class="h-4 w-4"></i></span>
               <span class="text-sm font-semibold tracking-wide">Shield Assurance LLC</span>
             </div>
             <p class="text-sm text-slate-400 leading-relaxed">Independent property and casualty insurance for Arizona families and businesses.</p>
@@ -131,11 +219,11 @@
           <div class="space-y-3">
             <h4 class="text-xs font-bold uppercase tracking-widest text-slate-200">Navigation</h4>
             <ul class="space-y-2 text-sm">
-              <li><a href="/index.html" class="hover:text-white transition">Home</a></li>
-              <li><a href="/about.html" class="hover:text-white transition">About</a></li>
-              <li><a href="/services.html" class="hover:text-white transition">Services</a></li>
-              <li><a href="/claims.html" class="hover:text-white transition">Claims</a></li>
-              <li><a href="/contact.html" class="hover:text-white transition">Quotes</a></li>
+              <li><a href="/" class="hover:text-white transition">Home</a></li>
+              <li><a href="/about" class="hover:text-white transition">About</a></li>
+              <li><a href="/services" class="hover:text-white transition">Services</a></li>
+              <li><a href="/claims" class="hover:text-white transition">Claims</a></li>
+              <li><a href="/contact" class="hover:text-white transition">Quotes</a></li>
             </ul>
           </div>
 
@@ -157,15 +245,15 @@
           </div>
         </div>
 
-        <div class="border-t border-slate-800 pt-6 mt-8 text-xs text-slate-500 flex flex-col md:flex-row md:justify-between gap-2">
-          <p>&copy; <span data-current-year></span> Shield Assurance LLC. All rights reserved.</p>
-          <p>Coverage subject to policy terms, conditions, limitations, and exclusions. Submitting a request does not bind coverage.</p>
-        </div>
+                <div class="border-t border-slate-800 pt-6 mt-8 text-xs text-slate-500 flex flex-col md:flex-row md:justify-between gap-2">
+                    <p>&copy; <span data-current-year></span> Shield Assurance LLC. All rights reserved. <a href="/admin/" rel="nofollow" aria-label="Admin login" class="ml-2 text-xs text-slate-400 hover:text-slate-300">admin</a></p>
+                    <p>Coverage subject to policy terms, conditions, limitations, and exclusions. Submitting a request does not bind coverage.</p>
+                </div>
       </div>
     </footer>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-config.js"></script>
     <script src="backend.js"></script>
-    <script src="app.js"></script>
+    <script src="app.js?v=20260606-1"></script>
 </body>
 </html>

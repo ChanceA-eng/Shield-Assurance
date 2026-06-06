@@ -1,7 +1,8 @@
 const SHIELD_STORAGE_KEYS = {
     siteContent: "shield-site-content",
     analytics: "shield-site-analytics",
-    visitorDate: "shield-last-visitor-date"
+    visitorDate: "shield-last-visitor-date",
+    visitorGeo: "shield-visitor-geo"
 };
 
 const SHIELD_DEFAULT_CONTENT = {
@@ -21,6 +22,7 @@ const SHIELD_DEFAULT_CONTENT = {
         {
             id: "leadership",
             name: "Agency Leadership",
+            roleLabel: "Team Member",
             title: "Shield Assurance LLC",
             bio: "Shield Assurance LLC was founded with a straightforward mission: eliminate corporate red tape and provide Arizona families and business owners with transparent, responsive risk guidance.",
             image: ""
@@ -34,7 +36,31 @@ const SHIELD_DEFAULT_ANALYTICS = {
     pageViewsByPath: {},
     quoteClicksByLabel: {},
     insuranceLineClicks: {},
+    formStartsById: {},
+    formSubmissionsById: {},
+    pageTimeSecondsByPath: {},
+    geographyByRegion: {},
+    incompleteForms: [],
+    geoIpLookupsByDay: {},
     lastUpdated: ""
+};
+
+const SHIELD_DEFAULT_ANALYTICS_CONFIG = {
+    posthogApiKey: "",
+    posthogApiHost: "https://us.i.posthog.com",
+    clarityProjectId: "x2wyyrdpna"
+};
+
+const getAnalyticsConfig = () => {
+    const raw = window.SHIELD_ANALYTICS_CONFIG;
+    if (!raw || typeof raw !== "object") {
+        return { ...SHIELD_DEFAULT_ANALYTICS_CONFIG };
+    }
+
+    return {
+        ...SHIELD_DEFAULT_ANALYTICS_CONFIG,
+        ...raw
+    };
 };
 
 const createInitials = (name) => {
@@ -104,6 +130,7 @@ const normalizeContent = (value) => {
             .map((agent, index) => ({
                 id: String(agent.id || `agent-${index + 1}`),
                 name: String(agent.name || "New Agent").trim(),
+                roleLabel: String(agent.roleLabel || "Team Member").trim(),
                 title: String(agent.title || "Insurance Advisor").trim(),
                 bio: String(agent.bio || "").trim(),
                 image: String(agent.image || "").trim()
@@ -143,7 +170,12 @@ const loadAnalytics = () => {
         uniqueVisitorsByDay: { ...SHIELD_DEFAULT_ANALYTICS.uniqueVisitorsByDay, ...stored.uniqueVisitorsByDay },
         pageViewsByPath: { ...SHIELD_DEFAULT_ANALYTICS.pageViewsByPath, ...stored.pageViewsByPath },
         quoteClicksByLabel: { ...SHIELD_DEFAULT_ANALYTICS.quoteClicksByLabel, ...stored.quoteClicksByLabel },
-        insuranceLineClicks: { ...SHIELD_DEFAULT_ANALYTICS.insuranceLineClicks, ...stored.insuranceLineClicks }
+        insuranceLineClicks: { ...SHIELD_DEFAULT_ANALYTICS.insuranceLineClicks, ...stored.insuranceLineClicks },
+        formStartsById: { ...SHIELD_DEFAULT_ANALYTICS.formStartsById, ...stored.formStartsById },
+        formSubmissionsById: { ...SHIELD_DEFAULT_ANALYTICS.formSubmissionsById, ...stored.formSubmissionsById },
+        pageTimeSecondsByPath: { ...SHIELD_DEFAULT_ANALYTICS.pageTimeSecondsByPath, ...stored.pageTimeSecondsByPath },
+        geographyByRegion: { ...SHIELD_DEFAULT_ANALYTICS.geographyByRegion, ...stored.geographyByRegion },
+        incompleteForms: Array.isArray(stored.incompleteForms) ? stored.incompleteForms.slice(0, 50) : []
     };
 };
 
@@ -170,6 +202,192 @@ const incrementBucket = (bucket, key) => {
     bucket[key] = (Number(bucket[key]) || 0) + 1;
 };
 
+const addBucketValue = (bucket, key, value) => {
+    bucket[key] = (Number(bucket[key]) || 0) + Number(value || 0);
+};
+
+const normalizeInsuranceLine = (value) => {
+    const normalized = String(value || "general").trim().toLowerCase();
+    if (["auto", "fleet", "auto-fleet", "auto_fleet"].includes(normalized)) {
+        return "auto-fleet";
+    }
+    if (["home", "property", "home-property", "homeowners", "personal"].includes(normalized)) {
+        return "property";
+    }
+    if (["commercial", "business", "commercial-property"].includes(normalized)) {
+        return "commercial";
+    }
+    return normalized || "general";
+};
+
+const normalizeArizonaZip = (value) => {
+    const digits = String(value || "").replace(/\D/g, "").slice(0, 5);
+    return digits;
+};
+
+const deriveArizonaRegion = (zip) => {
+    const numeric = Number.parseInt(normalizeArizonaZip(zip), 10);
+    if (!numeric) {
+        return "Unknown";
+    }
+    if (numeric >= 85600 && numeric <= 85799) {
+        return "Tucson Metro";
+    }
+    if (numeric >= 85000 && numeric <= 85399) {
+        return "Phoenix Metro";
+    }
+    if ((numeric >= 85000 && numeric <= 86599) || (numeric >= 88900 && numeric <= 88999)) {
+        return "Arizona Statewide";
+    }
+    return "Outside Arizona";
+};
+
+const normalizeUsStateCode = (value) => String(value || "").trim().toUpperCase();
+
+const normalizeGeoLabel = (payload) => {
+    const city = String(payload.city || payload.city_name || "").trim();
+    const state = normalizeUsStateCode(payload.region_code || payload.region || payload.state || payload.regionCode || "");
+    const country = String(payload.country_code || payload.country || "").trim().toUpperCase();
+    const zip = normalizeArizonaZip(payload.postal || payload.zip || payload.postal_code || "");
+
+    if (state === "AZ" && zip) {
+        return deriveArizonaRegion(zip);
+    }
+
+    if (state === "AZ" && city) {
+        const normalizedCity = city.toLowerCase();
+        if (normalizedCity.includes("tucson")) {
+            return "Tucson Metro";
+        }
+        if (normalizedCity.includes("phoenix") || normalizedCity.includes("mesa") || normalizedCity.includes("scottsdale")) {
+            return "Phoenix Metro";
+        }
+        return "Arizona Statewide";
+    }
+
+    if (city && state) {
+        return `${city}, ${state}`;
+    }
+
+    if (state && country === "US") {
+        return state;
+    }
+
+    if (country) {
+        return country;
+    }
+
+    return "Unknown";
+};
+
+const createGeoCachePayload = (label, source) => ({
+    label,
+    source,
+    date: todayKey()
+});
+
+const loadCachedGeo = () => {
+    const cached = safeParse(localStorage.getItem(SHIELD_STORAGE_KEYS.visitorGeo), null);
+    if (!cached || typeof cached !== "object") {
+        return null;
+    }
+
+    if (cached.date !== todayKey()) {
+        return null;
+    }
+
+    if (!cached.label) {
+        return null;
+    }
+
+    return cached;
+};
+
+const saveCachedGeo = (payload) => {
+    localStorage.setItem(SHIELD_STORAGE_KEYS.visitorGeo, JSON.stringify(payload));
+};
+
+const fetchGeoPayload = async (url, transform) => {
+    const response = await fetch(url, { cache: "no-store" });
+    if (!response.ok) {
+        throw new Error("Geo service request failed.");
+    }
+    const data = await response.json();
+    return transform(data);
+};
+
+const resolveVisitorRegionByIp = async () => {
+    const firstProvider = async () => {
+        return fetchGeoPayload("https://ipapi.co/json/", (data) => ({
+            city: data.city,
+            region_code: data.region_code,
+            country_code: data.country_code,
+            postal: data.postal
+        }));
+    };
+
+    const secondProvider = async () => {
+        return fetchGeoPayload("https://ipwho.is/", (data) => {
+            if (data && data.success === false) {
+                throw new Error("IP fallback provider failed.");
+            }
+            return {
+                city: data.city,
+                region_code: data.region_code,
+                country_code: data.country_code,
+                postal: data.postal
+            };
+        });
+    };
+
+    try {
+        const payload = await firstProvider();
+        return {
+            label: normalizeGeoLabel(payload),
+            source: "ipapi"
+        };
+    } catch (firstError) {
+        const payload = await secondProvider();
+        return {
+            label: normalizeGeoLabel(payload),
+            source: "ipwhois"
+        };
+    }
+};
+
+const upsertIncompleteForm = (entry) => {
+    const analytics = loadAnalytics();
+    const record = {
+        id: String(entry.id || `partial-${Date.now()}`),
+        createdAt: entry.createdAt || new Date().toISOString(),
+        path: String(entry.path || window.location.pathname || "/"),
+        formId: String(entry.formId || "consultation-form"),
+        zipCode: normalizeArizonaZip(entry.zipCode),
+        region: entry.region || deriveArizonaRegion(entry.zipCode),
+        coverageType: normalizeInsuranceLine(entry.coverageType),
+        fullName: String(entry.fullName || "").trim(),
+        email: String(entry.email || "").trim(),
+        phone: String(entry.phone || "").trim(),
+        lastField: String(entry.lastField || "").trim(),
+        completionPercent: Number(entry.completionPercent || 0),
+        intakeRoute: normalizeInsuranceLine(entry.intakeRoute),
+        status: "abandoned"
+    };
+
+    analytics.incompleteForms = [record, ...analytics.incompleteForms.filter((row) => row.id !== record.id)].slice(0, 50);
+    if (record.region && record.region !== "Unknown") {
+        incrementBucket(analytics.geographyByRegion, record.region);
+    }
+    saveAnalytics(analytics);
+};
+
+const markFormCompleted = (formId) => {
+    const analytics = loadAnalytics();
+    analytics.incompleteForms = analytics.incompleteForms.filter((row) => row.formId !== formId && row.id !== formId);
+    incrementBucket(analytics.formSubmissionsById, formId || "consultation-form");
+    saveAnalytics(analytics);
+};
+
 const trackAnalyticsEvent = (type, detail) => {
     const analytics = loadAnalytics();
     const dateKey = todayKey();
@@ -188,10 +406,312 @@ const trackAnalyticsEvent = (type, detail) => {
     }
 
     if (type === "line_click") {
-        incrementBucket(analytics.insuranceLineClicks, detail || "general");
+        incrementBucket(analytics.insuranceLineClicks, normalizeInsuranceLine(detail || "general"));
+    }
+
+    if (type === "form_start") {
+        incrementBucket(analytics.formStartsById, detail || "consultation-form");
+    }
+
+    if (type === "form_submit") {
+        incrementBucket(analytics.formSubmissionsById, detail || "consultation-form");
+    }
+
+    if (type === "time_on_page") {
+        const payload = detail && typeof detail === "object" ? detail : {};
+        addBucketValue(analytics.pageTimeSecondsByPath, payload.path || window.location.pathname || "/", payload.seconds || 0);
+    }
+
+    if (type === "geo_region") {
+        incrementBucket(analytics.geographyByRegion, detail || "Unknown");
+    }
+
+    if (type === "geo_ip_lookup") {
+        incrementBucket(analytics.geoIpLookupsByDay, dateKey);
     }
 
     saveAnalytics(analytics);
+    captureExternalAnalyticsEvent(type, detail);
+};
+
+const initializeThirdPartyAnalytics = async () => {
+    if (document.body.getAttribute("data-skip-analytics") === "true") {
+        return;
+    }
+
+    if (window.__shieldThirdPartyInitialized) {
+        return;
+    }
+
+    window.__shieldThirdPartyInitialized = true;
+    const config = getAnalyticsConfig();
+    const posthogApiKey = String(config.posthogApiKey || "").trim();
+    if (!posthogApiKey) {
+        return;
+    }
+
+    const loadPosthog = () => {
+        return new Promise((resolve, reject) => {
+            if (window.posthog && typeof window.posthog.init === "function") {
+                resolve(window.posthog);
+                return;
+            }
+
+            if (!window.posthog || !Array.isArray(window.posthog)) {
+                const posthogQueue = [];
+                window.posthog = posthogQueue;
+                posthogQueue._i = [];
+                posthogQueue.__SV = 1;
+                posthogQueue.init = function (token, options, name) {
+                    const target = name ? (window.posthog[name] = []) : posthogQueue;
+                    target.people = target.people || [];
+
+                    const methods = [
+                        "capture",
+                        "identify",
+                        "alias",
+                        "register",
+                        "unregister",
+                        "set_config",
+                        "reset",
+                        "group",
+                        "setPersonProperties"
+                    ];
+
+                    const createMethod = (collection, methodName) => {
+                        collection[methodName] = function () {
+                            collection.push([methodName].concat(Array.prototype.slice.call(arguments, 0)));
+                        };
+                    };
+
+                    methods.forEach((methodName) => createMethod(target, methodName));
+                    posthogQueue._i.push([token, options, name]);
+                };
+            }
+
+            const existing = document.getElementById("shield-posthog-array-script");
+            if (existing) {
+                existing.addEventListener("load", () => resolve(window.posthog));
+                existing.addEventListener("error", () => reject(new Error("PostHog script failed to load.")));
+                return;
+            }
+
+            const script = document.createElement("script");
+            script.id = "shield-posthog-array-script";
+            script.async = true;
+            script.src = "https://us.i.posthog.com/static/array.js";
+            script.onload = () => resolve(window.posthog);
+            script.onerror = () => reject(new Error("PostHog script failed to load."));
+            document.head.appendChild(script);
+        });
+    };
+
+    try {
+        const posthog = await loadPosthog();
+        if (!posthog || typeof posthog.init !== "function") {
+            return;
+        }
+
+        if (!window.__shieldPosthogInitialized) {
+            posthog.init(posthogApiKey, {
+                api_host: String(config.posthogApiHost || SHIELD_DEFAULT_ANALYTICS_CONFIG.posthogApiHost),
+                capture_pageview: false,
+                autocapture: true,
+                persistence: "localStorage+cookie",
+                loaded: (instance) => {
+                    instance.register({
+                        app: "shieldassurance-site"
+                    });
+                }
+            });
+            window.__shieldPosthogInitialized = true;
+        }
+    } catch (error) {
+        console.warn("PostHog initialization skipped.", error);
+    }
+};
+
+const captureExternalAnalyticsEvent = (type, detail) => {
+    if (document.body.getAttribute("data-skip-analytics") === "true") {
+        return;
+    }
+
+    if (!window.posthog || typeof window.posthog.capture !== "function") {
+        return;
+    }
+
+    const eventNameMap = {
+        page_view: "shield_page_view",
+        unique_visit: "shield_unique_visit",
+        quote_click: "shield_quote_click",
+        line_click: "shield_line_click",
+        form_start: "shield_form_start",
+        form_submit: "shield_form_submit",
+        time_on_page: "shield_time_on_page",
+        geo_region: "shield_geo_region",
+        geo_ip_lookup: "shield_geo_ip_lookup"
+    };
+
+    const eventName = eventNameMap[type] || `shield_${String(type || "event")}`;
+    try {
+        window.posthog.capture(eventName, {
+            path: window.location.pathname || "/",
+            detail: detail || ""
+        });
+    } catch (error) {
+        console.warn("PostHog capture failed.", error);
+    }
+};
+
+const initializeIpGeoAnalytics = async () => {
+    if (document.body.getAttribute("data-skip-analytics") === "true") {
+        return;
+    }
+
+    const cached = loadCachedGeo();
+    if (cached) {
+        trackAnalyticsEvent("geo_region", cached.label);
+        return;
+    }
+
+    try {
+        const resolved = await resolveVisitorRegionByIp();
+        if (!resolved || !resolved.label || resolved.label === "Unknown") {
+            return;
+        }
+
+        saveCachedGeo(createGeoCachePayload(resolved.label, resolved.source));
+        trackAnalyticsEvent("geo_region", resolved.label);
+        trackAnalyticsEvent("geo_ip_lookup");
+    } catch (error) {
+        console.warn("IP geo lookup failed.", error);
+    }
+};
+
+const initializeAdminAccess = () => {
+    const isHome = window.location.pathname === "/" || /\/index\.html$/i.test(window.location.pathname);
+    if (!isHome || document.body.getAttribute("data-skip-analytics") === "true") {
+        return;
+    }
+
+    const adminChip = document.createElement("a");
+    adminChip.href = "/admin/";
+    adminChip.rel = "nofollow";
+    adminChip.setAttribute("aria-label", "Admin access");
+    adminChip.textContent = "Open admin";
+    adminChip.className = "fixed bottom-6 right-6 z-[80] hidden rounded-full border border-slate-700 bg-slate-950/95 px-4 py-2 text-xs font-bold uppercase tracking-[0.2em] text-white shadow-2xl backdrop-blur";
+    document.body.appendChild(adminChip);
+
+    let revealTimer = null;
+    document.addEventListener("keydown", (event) => {
+        if (!(event.ctrlKey && event.shiftKey && String(event.key).toLowerCase() === "a")) {
+            return;
+        }
+
+        event.preventDefault();
+        adminChip.classList.remove("hidden");
+        window.clearTimeout(revealTimer);
+        revealTimer = window.setTimeout(() => {
+            adminChip.classList.add("hidden");
+        }, 8000);
+    });
+};
+
+const initializeFormAnalytics = () => {
+    if (document.body.getAttribute("data-skip-analytics") === "true") {
+        return;
+    }
+
+    document.querySelectorAll("form").forEach((form, formIndex) => {
+        const fields = Array.from(form.querySelectorAll("input, select, textarea")).filter((field) => {
+            if (!(field instanceof HTMLElement)) {
+                return false;
+            }
+            return field.getAttribute("type") !== "hidden" && field.getAttribute("name") !== "bot-field";
+        });
+
+        if (fields.length === 0) {
+            return;
+        }
+
+        const formId = form.id || form.getAttribute("name") || `form-${formIndex + 1}`;
+        let started = false;
+        let submitted = false;
+        let lastField = "";
+
+        const snapshot = () => {
+            const byName = (selector) => form.querySelector(selector);
+            const getValue = (selector) => {
+                const field = byName(selector);
+                return field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement || field instanceof HTMLSelectElement
+                    ? String(field.value || "").trim()
+                    : "";
+            };
+            const completed = fields.filter((field) => {
+                const value = "value" in field ? String(field.value || "").trim() : "";
+                return Boolean(value);
+            }).length;
+            const percent = fields.length > 0 ? Math.round((completed / fields.length) * 100) : 0;
+            const coverageValue = getValue("#coverage-type") || getValue("[name='coverage_type']") || getValue("#intake-route") || "general";
+            const zipValue = getValue("#zip-code") || getValue("[name='zip_code']") || getValue("#zip-input") || "";
+
+            return {
+                id: formId,
+                formId,
+                path: window.location.pathname || "/",
+                createdAt: new Date().toISOString(),
+                fullName: getValue("#full-name") || getValue("[name='full_name']"),
+                email: getValue("#email") || getValue("[name='email']"),
+                phone: getValue("#phone") || getValue("[name='phone']"),
+                zipCode: zipValue,
+                region: deriveArizonaRegion(zipValue),
+                coverageType: coverageValue,
+                intakeRoute: getValue("#intake-route") || coverageValue,
+                lastField,
+                completionPercent: percent
+            };
+        };
+
+        fields.forEach((field) => {
+            field.addEventListener("focus", () => {
+                if (!started) {
+                    started = true;
+                    trackAnalyticsEvent("form_start", formId);
+                }
+                lastField = field.getAttribute("name") || field.id || "field";
+            });
+
+            field.addEventListener("input", () => {
+                if (!started) {
+                    started = true;
+                    trackAnalyticsEvent("form_start", formId);
+                }
+                lastField = field.getAttribute("name") || field.id || "field";
+            });
+
+        });
+
+        form.addEventListener("submit", () => {
+            const data = snapshot();
+            submitted = true;
+            if (data.zipCode) {
+                trackAnalyticsEvent("geo_region", data.region);
+            }
+            trackAnalyticsEvent("form_submit", formId);
+            markFormCompleted(formId);
+        });
+
+        window.addEventListener("beforeunload", () => {
+            if (!started || submitted) {
+                return;
+            }
+            const data = snapshot();
+            if (!data.zipCode && !data.email && !data.phone && !data.fullName) {
+                return;
+            }
+            upsertIncompleteForm(data);
+        });
+    });
 };
 
 const applyText = (selector, value) => {
@@ -236,12 +756,14 @@ const renderAgentProfiles = (agents) => {
     container.innerHTML = list
         .map((agent) => {
             const name = String(agent.name || "Insurance Advisor").trim();
+            const roleLabel = String(agent.roleLabel || "Team Member").trim();
             const title = String(agent.title || agent.agentTitle || "Shield Assurance LLC").trim();
             const bio = String(agent.bio || "Trusted guidance rooted in accountability and responsive service.").trim();
             const image = /^data:image\//.test(agent.image) || /^https?:\/\//.test(agent.image)
                 ? agent.image
                 : createPlaceholderImage(name);
             const safeName = escapeHtml(name);
+            const safeRoleLabel = escapeHtml(roleLabel);
             const safeTitle = escapeHtml(title);
             const safeBio = escapeHtml(bio);
 
@@ -251,7 +773,7 @@ const renderAgentProfiles = (agents) => {
                         <img src="${image}" alt="${safeName}" class="h-40 w-40 rounded-2xl object-cover border border-slate-200 bg-slate-100" loading="lazy">
                         <div class="space-y-3">
                             <div>
-                                <p class="text-xs font-bold uppercase tracking-[0.25em] text-sky-600">Team Members</p>
+                                <p class="text-xs font-bold uppercase tracking-[0.25em] text-sky-600">${safeRoleLabel}</p>
                                 <h3 class="display-font mt-2 text-2xl font-bold text-slate-900">${safeName}</h3>
                                 <p class="text-sm font-semibold uppercase tracking-[0.25em] text-slate-500">${safeTitle}</p>
                             </div>
@@ -271,11 +793,54 @@ const applySiteContent = () => {
 
     applyText("[data-site-phone-text]", company.officePhone);
     applyText("[data-site-email-text]", company.supportEmail);
+    applyText("[data-site-az-license]", company.azLicense);
+    applyText("[data-site-mailing-address]", company.mailingAddress);
     applyLink("[data-site-phone-link]", phoneLink);
     applyLink("[data-site-email-link]", emailLink);
     toggleLinkVisibility("[data-site-linkedin-url]", company.linkedinUrl);
     toggleLinkVisibility("[data-site-facebook-url]", company.facebookUrl);
     toggleLinkVisibility("[data-site-twitter-url]", company.twitterUrl);
+
+    document.querySelectorAll("footer p").forEach((paragraph) => {
+        const text = String(paragraph.textContent || "").trim();
+        if (/^Arizona Property and Casualty License:/i.test(text) && !paragraph.querySelector("[data-site-az-license]")) {
+            paragraph.innerHTML = `Arizona Property and Casualty License: <span class="text-slate-400" data-site-az-license>${escapeHtml(company.azLicense)}</span>`;
+        }
+
+        if (text.includes("(mailing only)") && !paragraph.querySelector("[data-site-mailing-address]")) {
+            paragraph.textContent = `${company.mailingAddress} (mailing only)`;
+        }
+    });
+
+    document.querySelectorAll("[data-site-phone-link]").forEach((node) => {
+        if (!(node instanceof HTMLAnchorElement)) {
+            return;
+        }
+
+        if (node.querySelector("[data-site-phone-text]")) {
+            return;
+        }
+
+        const plainText = String(node.textContent || "").trim();
+        if (!plainText || /^call\s+/i.test(plainText)) {
+            return;
+        }
+
+        node.textContent = company.officePhone;
+    });
+
+    document.querySelectorAll("[data-site-email-link]").forEach((node) => {
+        if (!(node instanceof HTMLAnchorElement)) {
+            return;
+        }
+
+        if (node.querySelector("[data-site-email-text]")) {
+            return;
+        }
+
+        node.textContent = company.supportEmail;
+    });
+
     renderAgentProfiles(agents);
 };
 
@@ -334,9 +899,29 @@ window.ShieldSite = {
 };
 
 document.addEventListener("DOMContentLoaded", () => {
+    void initializeThirdPartyAnalytics();
     applySiteContent();
     void syncSiteContentFromBackend();
     initializeAnalytics();
+    initializeFormAnalytics();
+    initializeAdminAccess();
+    void initializeIpGeoAnalytics();
+
+    const pageStartedAt = Date.now();
+    let pageTimeRecorded = false;
+    const persistPageTime = () => {
+        if (pageTimeRecorded || document.body.getAttribute("data-skip-analytics") === "true") {
+            return;
+        }
+        pageTimeRecorded = true;
+        const seconds = Math.max(1, Math.round((Date.now() - pageStartedAt) / 1000));
+        trackAnalyticsEvent("time_on_page", {
+            path: window.location.pathname || "/",
+            seconds
+        });
+    };
+
+    window.addEventListener("pagehide", persistPageTime, { once: true });
 
     if (window.lucide) {
         window.lucide.createIcons();
