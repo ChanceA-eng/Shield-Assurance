@@ -24,7 +24,12 @@ document.addEventListener("DOMContentLoaded", () => {
         bundle: "bundle"
     };
 
-    if (typeParam && coverageSelect) {
+    // When arriving from the homepage coverage guide, the inline contact page script
+    // already pre-filled coverage type, message, and intake-route.  Only run the
+    // standard type-param logic if the guide data was NOT already applied.
+    const fromGuide = new URLSearchParams(window.location.search).get("from") === "guide";
+
+    if (!fromGuide && typeParam && coverageSelect) {
         const normalized = String(typeParam).toLowerCase();
         const mapped = typeMap[normalized];
         if (mapped) {
@@ -48,7 +53,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     if (sourceField) {
-        sourceField.value = "website-contact";
+        sourceField.value = fromGuide ? "coverage-guide" : "website-contact";
     }
 
     if (coverageSelect && routeField) {

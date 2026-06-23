@@ -32,6 +32,20 @@
             }
         };
     </script>
+    <script>
+    (function () {
+        try {
+            var params = new URLSearchParams(window.location.search);
+            var isGuideRoute = params.get("from") === "guide";
+            if (isGuideRoute) {
+                var line = params.get("line") || "";
+                var target = "/quote?from=guide";
+                if (line) target += "&line=" + encodeURIComponent(line);
+                window.location.replace(target);
+            }
+        } catch (_) {}
+    })();
+    </script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="stylesheet" href="styles.css">
     <script type="text/javascript">
@@ -217,7 +231,7 @@
                 <a href="/claims" class="hover:text-shieldBlue">Claims</a>
                 <a href="/contact" class="hover:text-shieldBlue">Contact</a>
                 <a href="tel:+18005550199" data-site-phone-link class="rounded-lg border border-slate-300 px-4 py-2">Call <span data-site-phone-text>(800) 555-0199</span></a>
-                <a href="/contact" data-analytics-quote="Header Quote CTA" class="rounded-lg bg-shieldNavy px-4 py-2 text-white">Get a Quote</a>
+                <a href="/quote" data-analytics-quote="Header Quote CTA" class="rounded-lg bg-shieldNavy px-4 py-2 text-white">Get a Quote</a>
             </div>
             <button id="mobile-menu-toggle" class="md:hidden text-slate-700 hover:text-slate-900 focus:outline-none ml-4" aria-label="Toggle menu" aria-expanded="false" aria-controls="mobile-menu">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
@@ -247,7 +261,7 @@
                     <h1 class="display-font mt-5 text-4xl font-extrabold leading-tight text-slate-900 md:text-6xl">Professional Coverage Strategy for Real-World Risk</h1>
                     <p class="mt-5 max-w-xl text-lg text-slate-700">Shield Assurance LLC helps families, professionals, and companies build resilient insurance programs with faster support and long-term guidance.</p>
                     <div class="mt-8 flex flex-col gap-3 sm:flex-row">
-                        <a href="/contact" data-analytics-consultation="Homepage Hero Consultation CTA" data-analytics-quote="Homepage Hero Consultation CTA" class="rounded-lg bg-shieldNavy px-7 py-3 text-center text-sm font-bold text-white hover:bg-slate-900">Start a Consultation</a>
+                        <a href="/quote" data-analytics-consultation="Homepage Hero Consultation CTA" data-analytics-quote="Homepage Hero Consultation CTA" class="rounded-lg bg-shieldNavy px-7 py-3 text-center text-sm font-bold text-white hover:bg-slate-900">Start a Consultation</a>
                         <a href="/services" class="rounded-lg border border-slate-300 bg-white px-7 py-3 text-center text-sm font-bold text-slate-700 hover:border-slate-400">Explore Services</a>
                     </div>
                 </div>
@@ -276,19 +290,170 @@
             </div>
         </section>
 
+        <section id="coverage-factor-guide" class="bg-white py-24 border-t border-slate-100">
+            <div class="mx-auto max-w-7xl px-6 lg:px-8">
+                <div class="max-w-4xl">
+                    <p class="text-xs font-bold uppercase tracking-[0.3em] text-shieldBlue">Coverage Planning</p>
+                    <h2 class="display-font mt-3 text-3xl font-extrabold text-slate-900 md:text-4xl">Interactive Coverage Factor Guide</h2>
+                    <p class="mt-4 text-base leading-7 text-slate-600">Adjust the selections below to see how different policy choices affect your overall protection strength and estimated premium tier.</p>
+                </div>
+
+                <div class="mt-12 grid gap-8 lg:grid-cols-[1.65fr_1fr] lg:items-start">
+                    <div>
+                        <div>
+                            <p class="text-sm font-bold uppercase tracking-[0.2em] text-slate-500">Step 1: Choose Your Journey</p>
+                            <div class="mt-4 grid gap-4 sm:grid-cols-3" role="tablist" aria-label="Coverage category">
+                                <button type="button" class="journey-card rounded-2xl p-4 text-left" data-journey-tab="auto" aria-selected="true">
+                                    <div class="flex items-start justify-between gap-3">
+                                        <div>
+                                            <p class="text-base font-bold text-slate-900">Personal Auto</p>
+                                            <p class="mt-2 text-sm leading-6 text-slate-500">Deductibles, liability limits, and practical policy add-ons.</p>
+                                        </div>
+                                        <span class="journey-check grid h-6 w-6 place-items-center rounded-full text-xs">✓</span>
+                                    </div>
+                                </button>
+                                <button type="button" class="journey-card rounded-2xl p-4 text-left" data-journey-tab="home" aria-selected="false">
+                                    <div class="flex items-start justify-between gap-3">
+                                        <div>
+                                            <p class="text-base font-bold text-slate-900">Homeowners</p>
+                                            <p class="mt-2 text-sm leading-6 text-slate-500">Storm deductibles, property valuation, and essential endorsements.</p>
+                                        </div>
+                                        <span class="journey-check grid h-6 w-6 place-items-center rounded-full text-xs">✓</span>
+                                    </div>
+                                </button>
+                                <button type="button" class="journey-card rounded-2xl p-4 text-left" data-journey-tab="business" aria-selected="false">
+                                    <div class="flex items-start justify-between gap-3">
+                                        <div>
+                                            <p class="text-base font-bold text-slate-900">Business Operations</p>
+                                            <p class="mt-2 text-sm leading-6 text-slate-500">Liability structure and operating exposure protection.</p>
+                                        </div>
+                                        <span class="journey-check grid h-6 w-6 place-items-center rounded-full text-xs">✓</span>
+                                    </div>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="mt-8">
+                            <p class="text-sm font-bold uppercase tracking-[0.2em] text-slate-500">Step 2: Customize Selections</p>
+
+                            <section class="journey-step-panel mt-4 space-y-8" data-journey-panel="auto">
+                                <div>
+                                    <h3 class="text-2xl font-bold text-slate-900">Personal Auto Options</h3>
+                                </div>
+
+                                <div>
+                                    <h4 class="text-lg font-bold text-slate-900">Deductible Level</h4>
+                                    <div class="mt-4 grid gap-4 md:grid-cols-3">
+                                        <button type="button" class="journey-option rounded-2xl p-4 text-left" data-journey-choice data-line="auto" data-group="deductible" data-value="250"><p class="font-bold">$250 Deductible</p><span class="journey-pill mt-3">Higher Premium</span><p class="mt-3 text-sm leading-6 text-slate-600">Lowering your deductible reduces your immediate out-of-pocket expenses during an accident claim, though it increases your recurring premium cost.</p></button>
+                                        <button type="button" class="journey-option rounded-2xl p-4 text-left" data-journey-choice data-line="auto" data-group="deductible" data-value="500"><p class="font-bold">$500 Deductible</p><span class="journey-pill mt-3">Standard Balance</span><p class="mt-3 text-sm leading-6 text-slate-600">This middle-ground option balances a manageable claim expense with stable, standard premium efficiency.</p></button>
+                                        <button type="button" class="journey-option rounded-2xl p-4 text-left" data-journey-choice data-line="auto" data-group="deductible" data-value="1000"><p class="font-bold">$1,000 Deductible</p><span class="journey-pill mt-3">Lower Premium</span><p class="mt-3 text-sm leading-6 text-slate-600">Choosing a higher deductible lowers your premium costs, but requires greater out-of-pocket financial readiness if you file a comprehensive or collision claim.</p></button>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <h4 class="text-lg font-bold text-slate-900">Liability Protection Strength</h4>
+                                    <div class="mt-4 grid gap-4 md:grid-cols-3">
+                                        <button type="button" class="journey-option rounded-2xl p-4 text-left" data-journey-choice data-line="auto" data-group="liability" data-value="minimum"><p class="font-bold">State Minimum Limits</p><span class="journey-pill mt-3">High Risk</span><p class="mt-3 text-sm leading-6 text-slate-600">Minimum limits lower your cost but leave personal savings, home equity, and future wages heavily exposed if a major accident lawsuit exceeds Arizona legal caps.</p></button>
+                                        <button type="button" class="journey-option rounded-2xl p-4 text-left" data-journey-choice data-line="auto" data-group="liability" data-value="standard"><p class="font-bold">Standard Limits ($100k/$300k)</p><span class="journey-pill mt-3">Secure Balance</span><p class="mt-3 text-sm leading-6 text-slate-600">Strengthens your liability shield so a typical accident is far less likely to threaten your household financial stability.</p></button>
+                                        <button type="button" class="journey-option rounded-2xl p-4 text-left" data-journey-choice data-line="auto" data-group="liability" data-value="preferred"><p class="font-bold">Preferred Limits ($250k/$500k)</p><span class="journey-pill mt-3">Maximum Asset Shield</span><p class="mt-3 text-sm leading-6 text-slate-600">Thoroughly insulates extensive personal savings, investments, and property assets from severe civil claims.</p></button>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <h4 class="text-lg font-bold text-slate-900">Add-on Protection Features</h4>
+                                    <div class="mt-4 grid gap-4 md:grid-cols-2">
+                                        <label class="journey-checkline flex items-start gap-3 rounded-2xl p-4 text-sm leading-6 text-slate-600"><input type="checkbox" class="mt-1 h-4 w-4 rounded border-slate-400 text-shieldBlue focus:ring-shieldBlue" data-journey-checkbox data-line="auto" data-key="roadside"><span><span class="block font-bold text-slate-900">Roadside Assistance</span>Adds standard towing and emergency breakdown support to the policy.</span></label>
+                                        <label class="journey-checkline flex items-start gap-3 rounded-2xl p-4 text-sm leading-6 text-slate-600"><input type="checkbox" class="mt-1 h-4 w-4 rounded border-slate-400 text-shieldBlue focus:ring-shieldBlue" data-journey-checkbox data-line="auto" data-key="rental"><span><span class="block font-bold text-slate-900">Rental Car Reimbursement</span>Covers temporary transportation costs while your vehicle is in the shop after a covered loss.</span></label>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <section class="journey-step-panel mt-4 space-y-8" data-journey-panel="home" hidden>
+                                <div><h3 class="text-2xl font-bold text-slate-900">Homeowners Options</h3></div>
+
+                                <div>
+                                    <h4 class="text-lg font-bold text-slate-900">Wind and Hail Claim Structure (Arizona Storm Seasons)</h4>
+                                    <div class="mt-4 grid gap-4 md:grid-cols-2">
+                                        <button type="button" class="journey-option rounded-2xl p-4 text-left" data-journey-choice data-line="home" data-group="storm" data-value="flat"><p class="font-bold">Standard Flat Deductible</p><span class="journey-pill mt-3">Fixed Out-of-Pocket</span><p class="mt-3 text-sm leading-6 text-slate-600">Keeps your claim exposure to a fixed dollar amount, providing predictable financial boundaries during unexpected storm damage events.</p></button>
+                                        <button type="button" class="journey-option rounded-2xl p-4 text-left" data-journey-choice data-line="home" data-group="storm" data-value="percent"><p class="font-bold">1% Percentage Deductible</p><span class="journey-pill mt-3">Premium Reduction</span><p class="mt-3 text-sm leading-6 text-slate-600">Lowers your ongoing premium cost significantly, but ties your out-of-pocket storm claim responsibility directly to 1% of your home&rsquo;s total structural replacement value.</p></button>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <h4 class="text-lg font-bold text-slate-900">Personal Belongings Valuation Type</h4>
+                                    <div class="mt-4 grid gap-4 md:grid-cols-2">
+                                        <button type="button" class="journey-option rounded-2xl p-4 text-left" data-journey-choice data-line="home" data-group="valuation" data-value="acv"><p class="font-bold">Actual Cash Value (ACV)</p><span class="journey-pill mt-3">Depreciated Settlement</span><p class="mt-3 text-sm leading-6 text-slate-600">Claims payouts take item age, wear, and tear into account, meaning your compensation may not match the actual cost to buy brand-new replacements.</p></button>
+                                        <button type="button" class="journey-option rounded-2xl p-4 text-left" data-journey-choice data-line="home" data-group="valuation" data-value="rcv"><p class="font-bold">Replacement Cost Value (RCV)</p><span class="journey-pill mt-3">Full Asset Protection</span><p class="mt-3 text-sm leading-6 text-slate-600">Settles claims at current retail market pricing without deductions for depreciation, ensuring you can completely rebuild your inventory.</p></button>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <h4 class="text-lg font-bold text-slate-900">Essential Endorsements</h4>
+                                    <div class="mt-4 grid gap-4 md:grid-cols-2">
+                                        <label class="journey-checkline flex items-start gap-3 rounded-2xl p-4 text-sm leading-6 text-slate-600"><input type="checkbox" class="mt-1 h-4 w-4 rounded border-slate-400 text-shieldBlue focus:ring-shieldBlue" data-journey-checkbox data-line="home" data-key="waterBackup"><span><span class="block font-bold text-slate-900">Water Backup &amp; Sump Discharge</span>Extends protection to cover interior plumbing backups, drain overflows, and sewer line failures.</span></label>
+                                        <label class="journey-checkline flex items-start gap-3 rounded-2xl p-4 text-sm leading-6 text-slate-600"><input type="checkbox" class="mt-1 h-4 w-4 rounded border-slate-400 text-shieldBlue focus:ring-shieldBlue" data-journey-checkbox data-line="home" data-key="identity"><span><span class="block font-bold text-slate-900">Identity Theft Financial Recovery</span>Covers legal, administrative, and restoration expenses required to repair compromised credit and identity records.</span></label>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <section class="journey-step-panel mt-4 space-y-8" data-journey-panel="business" hidden>
+                                <div><h3 class="text-2xl font-bold text-slate-900">Business Operations Options</h3></div>
+
+                                <div>
+                                    <h4 class="text-lg font-bold text-slate-900">Liability Coverage Scope</h4>
+                                    <div class="mt-4 grid gap-4 md:grid-cols-3">
+                                        <button type="button" class="journey-option rounded-2xl p-4 text-left" data-journey-choice data-line="business" data-group="liabilityScope" data-value="basic"><p class="font-bold">Basic General Liability ($1M / $2M)</p><span class="journey-pill mt-3">Standard Operations</span><p class="mt-3 text-sm leading-6 text-slate-600">Fulfills standard commercial lease requirements and protects against everyday slip-and-fall incidents or basic third-party property damage.</p></button>
+                                        <button type="button" class="journey-option rounded-2xl p-4 text-left" data-journey-choice data-line="business" data-group="liabilityScope" data-value="enhanced"><p class="font-bold">Enhanced Multi-Line Package</p><span class="journey-pill mt-3">Expanded Protection</span><p class="mt-3 text-sm leading-6 text-slate-600">Integrates commercial property safeguards, inventory protection, and business interruption coverage alongside your baseline liability.</p></button>
+                                        <button type="button" class="journey-option rounded-2xl p-4 text-left" data-journey-choice data-line="business" data-group="liabilityScope" data-value="preferred"><p class="font-bold">Preferred Corporate Structure with Umbrella</p><span class="journey-pill mt-3">Complete Enterprise Safety</span><p class="mt-3 text-sm leading-6 text-slate-600">Adds secondary, multi-million dollar liability buffers to thoroughly insulate business continuity from major operational lawsuits or contract disputes.</p></button>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <h4 class="text-lg font-bold text-slate-900">Operational Risk Factors</h4>
+                                    <div class="mt-4 grid gap-4 md:grid-cols-2">
+                                        <label class="journey-checkline flex items-start gap-3 rounded-2xl p-4 text-sm leading-6 text-slate-600"><input type="checkbox" class="mt-1 h-4 w-4 rounded border-slate-400 text-shieldBlue focus:ring-shieldBlue" data-journey-checkbox data-line="business" data-key="commercialAuto"><span><span class="block font-bold text-slate-900">Commercial Auto / Non-Owned Vehicle Coverage</span>Protects your business when employees drive personal or rented vehicles for company operations.</span></label>
+                                        <label class="journey-checkline flex items-start gap-3 rounded-2xl p-4 text-sm leading-6 text-slate-600"><input type="checkbox" class="mt-1 h-4 w-4 rounded border-slate-400 text-shieldBlue focus:ring-shieldBlue" data-journey-checkbox data-line="business" data-key="cyber"><span><span class="block font-bold text-slate-900">Cyber Liability &amp; Data Incident Readiness</span>Safeguards company revenue from network breaches, client data restoration, and regulatory compliance fees.</span></label>
+                                    </div>
+                                </div>
+                            </section>
+                        </div>
+                    </div>
+
+                    <aside class="journey-summary rounded-3xl p-6 lg:sticky lg:top-28">
+                        <p class="text-sm font-bold uppercase tracking-[0.2em] text-shieldBlue">Live Summary</p>
+                        <h3 class="mt-3 text-2xl font-bold text-slate-900" data-journey-tier>Balanced Tier</h3>
+                        <p class="mt-3 text-sm leading-7 text-slate-600" data-journey-feedback></p>
+
+                        <div class="mt-6">
+                            <div class="journey-meter"><div class="journey-pin" data-journey-pin style="left: 0%;"></div></div>
+                            <div class="mt-3 flex justify-between text-[11px] font-bold uppercase tracking-[0.16em] text-slate-500"><span>Economy Tier</span><span>Balanced Tier</span><span>Robust Protection</span></div>
+                        </div>
+
+                        <div class="mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                            <p class="text-sm font-bold text-slate-900">Current setup</p>
+                            <div class="mt-3 space-y-2 text-sm text-slate-600" data-journey-selection-list></div>
+                        </div>
+
+                        <button type="button" class="mt-6 inline-flex w-full items-center justify-center rounded-xl bg-shieldNavy px-5 py-4 text-sm font-bold text-white hover:bg-slate-900" data-analytics-quote="Homepage Coverage Guide Submit CTA" data-journey-submit>Submit This Setup for Review</button>
+                        <p class="mt-3 text-xs italic leading-6 text-slate-500">Tier indicators are for educational comparison purposes only. Actual policy premiums are determined individually by carrier underwriting verification.</p>
+                    </aside>
+                </div>
+            </div>
+        </section>
+
         <section class="mx-auto max-w-7xl px-6 py-16 lg:px-8">
             <div class="grid gap-6 md:grid-cols-3">
                 <article class="reveal rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
                     <i data-lucide="building-2" class="h-6 w-6 text-shieldBlue"></i>
                     <h2 class="display-font mt-4 text-2xl font-bold text-slate-900">Business Insurance</h2>
                     <p class="mt-2 text-slate-600">Liability, workers comp, data security options, and umbrella strategies for growing teams.</p>
-                    <a href="/contact?type=commercial" data-intake-route="commercial" class="mt-5 inline-flex rounded-lg border border-slate-300 px-4 py-2 text-sm font-bold text-slate-700 hover:border-shieldBlue hover:text-shieldBlue">Start Commercial Intake</a>
+                    <a href="/quote?line=business" data-intake-route="commercial" class="mt-5 inline-flex rounded-lg border border-slate-300 px-4 py-2 text-sm font-bold text-slate-700 hover:border-shieldBlue hover:text-shieldBlue">Start Commercial Plan</a>
                 </article>
                 <article class="reveal rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
                     <i data-lucide="home" class="h-6 w-6 text-shieldBlue"></i>
                     <h2 class="display-font mt-4 text-2xl font-bold text-slate-900">Home and Property</h2>
                     <p class="mt-2 text-slate-600">Comprehensive policies for homes, rentals, valuables, and weather events.</p>
-                    <a href="/contact?type=property" data-intake-route="property" class="mt-5 inline-flex rounded-lg border border-slate-300 px-4 py-2 text-sm font-bold text-slate-700 hover:border-shieldBlue hover:text-shieldBlue">Start Property Intake</a>
+                    <a href="/quote?line=home" data-intake-route="property" class="mt-5 inline-flex rounded-lg border border-slate-300 px-4 py-2 text-sm font-bold text-slate-700 hover:border-shieldBlue hover:text-shieldBlue">Start Property Plan</a>
                 </article>
                 <article class="reveal rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
                     <div class="w-12 h-12 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-600 mb-4">
@@ -298,7 +463,7 @@
                     </div>
                     <h2 class="display-font text-2xl font-bold text-slate-900">Auto and Fleet</h2>
                     <p class="mt-2 text-slate-600">Personal and fleet plans with deductible and risk-transfer optimization.</p>
-                    <a href="/contact?type=auto" data-intake-route="auto-fleet" class="mt-5 inline-flex rounded-lg border border-slate-300 px-4 py-2 text-sm font-bold text-slate-700 hover:border-shieldBlue hover:text-shieldBlue">Start Auto/Fleet Intake</a>
+                    <a href="/quote?line=auto" data-intake-route="auto-fleet" class="mt-5 inline-flex rounded-lg border border-slate-300 px-4 py-2 text-sm font-bold text-slate-700 hover:border-shieldBlue hover:text-shieldBlue">Start Auto/Fleet Plan</a>
                 </article>
             </div>
         </section>
@@ -369,6 +534,232 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-config.js?v=20260604-2"></script>
     <script src="backend.js?v=20260604-2"></script>
+    <script>
+    (function () {
+        var root = document.getElementById("coverage-factor-guide");
+        if (!root) return;
+
+        var config = {
+            auto: {
+                label: "Personal Auto",
+                min: 8,
+                max: 34,
+                groups: {
+                    deductible: { label: "Deductible Level", options: { "250": "$250 Deductible", "500": "$500 Deductible", "1000": "$1,000 Deductible" }, weights: { "250": 14, "500": 10, "1000": 6 } },
+                    liability: { label: "Liability Protection Strength", options: { minimum: "State Minimum Limits", standard: "Standard Limits ($100k/$300k)", preferred: "Preferred Limits ($250k/$500k)" }, weights: { minimum: 2, standard: 8, preferred: 14 } }
+                },
+                checks: { roadside: { label: "Roadside Assistance", weight: 3 }, rental: { label: "Rental Car Reimbursement", weight: 3 } }
+            },
+            home: {
+                label: "Homeowners",
+                min: 7,
+                max: 29,
+                groups: {
+                    storm: { label: "Wind and Hail Claim Structure", options: { flat: "Standard Flat Deductible", percent: "1% Percentage Deductible" }, weights: { flat: 11, percent: 5 } },
+                    valuation: { label: "Personal Belongings Valuation Type", options: { acv: "Actual Cash Value (ACV)", rcv: "Replacement Cost Value (RCV)" }, weights: { acv: 4, rcv: 12 } }
+                },
+                checks: { waterBackup: { label: "Water Backup & Sump Discharge", weight: 4 }, identity: { label: "Identity Theft Financial Recovery", weight: 2 } }
+            },
+            business: {
+                label: "Business Operations",
+                min: 8,
+                max: 33,
+                groups: {
+                    liabilityScope: { label: "Liability Coverage Scope", options: { basic: "Basic General Liability ($1M / $2M)", enhanced: "Enhanced Multi-Line Package", preferred: "Preferred Corporate Structure with Umbrella" }, weights: { basic: 7, enhanced: 13, preferred: 19 } }
+                },
+                checks: { commercialAuto: { label: "Commercial Auto / Non-Owned Vehicle Coverage", weight: 4 }, cyber: { label: "Cyber Liability & Data Incident Readiness", weight: 4 } }
+            }
+        };
+
+        var state = {
+            line: "auto",
+            auto: { deductible: "500", liability: "standard", roadside: false, rental: false },
+            home: { storm: "flat", valuation: "rcv", waterBackup: false, identity: false },
+            business: { liabilityScope: "enhanced", commercialAuto: false, cyber: false }
+        };
+
+        var tabButtons = root.querySelectorAll("[data-journey-tab]");
+        var panels = root.querySelectorAll("[data-journey-panel]");
+        var tierNode = root.querySelector("[data-journey-tier]");
+        var feedbackNode = root.querySelector("[data-journey-feedback]");
+        var pinNode = root.querySelector("[data-journey-pin]");
+        var listNode = root.querySelector("[data-journey-selection-list]");
+
+        function showPanel(line) {
+            panels.forEach(function (panel) {
+                var active = panel.getAttribute("data-journey-panel") === line;
+                panel.hidden = !active;
+                panel.classList.remove("is-entering");
+                if (active) {
+                    panel.classList.add("is-entering");
+                    window.requestAnimationFrame(function () {
+                        panel.classList.remove("is-entering");
+                    });
+                }
+            });
+        }
+
+        function setActiveTab(line) {
+            state.line = line;
+            tabButtons.forEach(function (button) {
+                var active = button.getAttribute("data-journey-tab") === line;
+                button.classList.toggle("is-active", active);
+                button.setAttribute("aria-selected", String(active));
+            });
+            showPanel(line);
+            render();
+        }
+
+        function syncChoices() {
+            root.querySelectorAll("[data-journey-choice]").forEach(function (button) {
+                var line = button.getAttribute("data-line");
+                var group = button.getAttribute("data-group");
+                var value = button.getAttribute("data-value");
+                var pressed = state[line] && state[line][group] === value;
+                button.setAttribute("aria-pressed", String(pressed));
+            });
+            root.querySelectorAll("[data-journey-checkbox]").forEach(function (checkbox) {
+                var line = checkbox.getAttribute("data-line");
+                var key = checkbox.getAttribute("data-key");
+                checkbox.checked = Boolean(state[line] && state[line][key]);
+            });
+        }
+
+        function scoreLine(line) {
+            var def = config[line];
+            var selected = state[line];
+            var total = 0;
+            Object.keys(def.groups).forEach(function (group) {
+                var value = selected[group];
+                total += def.groups[group].weights[value] || 0;
+            });
+            Object.keys(def.checks).forEach(function (key) {
+                if (selected[key]) total += def.checks[key].weight;
+            });
+            return total;
+        }
+
+        function normalize(line, score) {
+            var def = config[line];
+            var pct = ((score - def.min) / (def.max - def.min)) * 100;
+            return Math.max(0, Math.min(100, Math.round(pct)));
+        }
+
+        function tierText(percent) {
+            if (percent < 34) {
+                return {
+                    tier: "Economy Tier",
+                    message: "Your current configuration focuses on keeping your upfront insurance costs minimal. This means you are carrying higher personal or business risk out-of-pocket if a major claim occurs."
+                };
+            }
+            if (percent < 67) {
+                return {
+                    tier: "Balanced Tier",
+                    message: "Your setup reflects a standard risk mitigation plan, striking a safe compromise between stable premium targets and solid liability protection."
+                };
+            }
+            return {
+                tier: "Robust Protection",
+                message: "You have maximized your safety limits and included key endorsements to thoroughly insulate your family or business assets against severe financial disruptions."
+            };
+        }
+
+        function renderSelections(line) {
+            var def = config[line];
+            var selected = state[line];
+            var rows = [];
+            rows.push("<p><span class='font-semibold text-slate-900'>Coverage Type:</span> " + def.label + "</p>");
+            Object.keys(def.groups).forEach(function (group) {
+                var value = selected[group];
+                rows.push("<p><span class='font-semibold text-slate-900'>" + def.groups[group].label + ":</span> " + def.groups[group].options[value] + "</p>");
+            });
+            var selectedChecks = Object.keys(def.checks).filter(function (key) { return selected[key]; }).map(function (key) { return def.checks[key].label; });
+            rows.push("<p><span class='font-semibold text-slate-900'>Add-ons:</span> " + (selectedChecks.length ? selectedChecks.join(", ") : "None selected") + "</p>");
+            listNode.innerHTML = rows.join("");
+        }
+
+        function submitSelection() {
+            var line = state.line;
+            var def = config[line];
+            var selected = state[line];
+            var score = scoreLine(line);
+            var percent = normalize(line, score);
+            var tier = tierText(percent);
+
+            // Build a human-readable summary of selections
+            var selectionLines = [];
+            Object.keys(def.groups).forEach(function (group) {
+                var value = selected[group];
+                selectionLines.push(def.groups[group].label + ": " + def.groups[group].options[value]);
+            });
+            Object.keys(def.checks).forEach(function (key) {
+                if (selected[key]) selectionLines.push(def.checks[key].label + ": Selected");
+            });
+
+            // Persist the guide configuration for the contact page to read
+            try {
+                localStorage.setItem("shieldGuide_line", line);
+                localStorage.setItem("shieldGuide_lineLabel", def.label);
+                localStorage.setItem("shieldGuide_tier", tier.tier);
+                localStorage.setItem("shieldGuide_summary", selectionLines.join(" | "));
+                localStorage.setItem("shieldGuide_coverageType", line === "business" ? "business" : line === "home" ? "home" : "auto");
+                localStorage.setItem("shieldGuide_message",
+                    "Coverage Guide Setup:\nType: " + def.label + "\nTier: " + tier.tier + "\n" + selectionLines.join("\n"));
+            } catch (e) { /* localStorage blocked */ }
+
+            // Navigate to the contact/intake page
+            window.location.href = "/quote?from=guide&line=" + encodeURIComponent(line);
+        }
+
+        function render() {
+            syncChoices();
+            var score = scoreLine(state.line);
+            var percent = normalize(state.line, score);
+            var tier = tierText(percent);
+            tierNode.textContent = tier.tier;
+            feedbackNode.textContent = tier.message;
+            pinNode.style.left = percent + "%";
+            renderSelections(state.line);
+        }
+
+        tabButtons.forEach(function (button) {
+            button.addEventListener("click", function () {
+                setActiveTab(button.getAttribute("data-journey-tab") || "auto");
+            });
+        });
+
+        root.addEventListener("click", function (event) {
+            var choice = event.target.closest("[data-journey-choice]");
+            if (choice && root.contains(choice)) {
+                var line = choice.getAttribute("data-line");
+                var group = choice.getAttribute("data-group");
+                var value = choice.getAttribute("data-value");
+                if (state[line]) {
+                    state[line][group] = value;
+                    render();
+                }
+            }
+
+            var submit = event.target.closest("[data-journey-submit]");
+            if (submit && root.contains(submit)) {
+                submitSelection();
+            }
+        });
+
+        root.querySelectorAll("[data-journey-checkbox]").forEach(function (checkbox) {
+            checkbox.addEventListener("change", function () {
+                var line = checkbox.getAttribute("data-line");
+                var key = checkbox.getAttribute("data-key");
+                if (state[line]) {
+                    state[line][key] = checkbox.checked;
+                    render();
+                }
+            });
+        });
+
+        setActiveTab("auto");
+    })();
+    </script>
     <script src="app.js?v=20260606-1"></script>
 </body>
 </html>

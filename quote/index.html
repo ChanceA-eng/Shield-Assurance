@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Quote | Shield Assurance LLC</title>
+  <meta name="robots" content="noindex,follow">
+  <script>
+    (function () {
+      var sourceStorageKey = "shield-quote-source";
+      var params = new URLSearchParams(window.location.search);
+      var line = params.get("line") || "";
+      var from = params.get("from") || "";
+      var entry = params.get("entry") || "";
+      if (!entry && String(line).toLowerCase() === "personal") {
+        entry = "personal";
+        line = "";
+      }
+      var src = params.get("src") || "";
+
+      if (!src) {
+        try {
+          var stored = JSON.parse(sessionStorage.getItem(sourceStorageKey) || "null");
+          if (stored && typeof stored.label === "string" && stored.label.trim()) {
+            src = stored.label.trim();
+          }
+        } catch (_) {}
+      }
+
+      if (!src && document.referrer) {
+        try {
+          var refPath = new URL(document.referrer).pathname || "";
+          src = refPath || "";
+        } catch (_) {}
+      }
+
+      var to = new URL("/contact/?quote=1", window.location.origin);
+      if (line) to.searchParams.set("line", line);
+      if (from) to.searchParams.set("from", from);
+      if (entry) to.searchParams.set("entry", entry);
+      if (src) to.searchParams.set("src", src);
+      window.location.replace(to.pathname + to.search);
+    })();
+  </script>
+</head>
+<body></body>
+</html>

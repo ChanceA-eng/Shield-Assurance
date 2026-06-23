@@ -22,7 +22,7 @@
         tailwind.config = { theme: { extend: { colors: { shieldNavy: "#0b1323", shieldBlue: "#0ea5e9", shieldAmber: "#f59e0b" } } } };
     </script>
     <script src="https://unpkg.com/lucide@latest"></script>
-        <script type="application/ld+json">
+    <script type="application/ld+json">
         {
             "@context": "https://schema.org",
             "@graph": [
@@ -49,7 +49,7 @@
                 }
             ]
         }
-        </script>
+    </script>
     <link rel="stylesheet" href="../styles.css">
     <script type="text/javascript">
       (function(c,l,a,r,i,t,y){
@@ -137,7 +137,7 @@
         <nav class="mx-auto flex max-w-7xl items-center justify-between px-6 py-3 lg:px-8">
             <a href="/" class="flex items-center gap-3"><span class="grid h-10 w-10 place-content-center rounded-xl bg-shieldNavy text-white"><i data-lucide="shield-check" class="h-5 w-5"></i></span><span class="display-font text-lg font-extrabold">Shield Assurance <span class="text-shieldBlue">LLC</span></span></a>
             <div class="hidden items-center gap-7 text-sm font-semibold text-slate-700 md:flex">
-                <a href="/services/" class="text-shieldBlue">Services</a><a href="/about/" class="hover:text-shieldBlue">About</a><a href="/claims/" class="hover:text-shieldBlue">Claims</a><a href="/contact/" class="hover:text-shieldBlue">Contact</a><a href="tel:+18005550199" data-site-phone-link class="rounded-lg border border-slate-300 px-4 py-2">Call <span data-site-phone-text>(800) 555-0199</span></a><a href="/contact/" data-analytics-quote="Header Quote CTA" class="rounded-lg bg-shieldNavy px-4 py-2 text-white">Get a Quote</a>
+                <a href="/services/" class="text-shieldBlue">Services</a><a href="/about/" class="hover:text-shieldBlue">About</a><a href="/claims/" class="hover:text-shieldBlue">Claims</a><a href="/contact/" class="hover:text-shieldBlue">Contact</a><a href="tel:+18005550199" data-site-phone-link class="rounded-lg border border-slate-300 px-4 py-2">Call <span data-site-phone-text>(800) 555-0199</span></a><a href="/quote" data-analytics-quote="Header Quote CTA" class="rounded-lg bg-shieldNavy px-4 py-2 text-white">Get a Quote</a>
             </div>
             <button id="mobile-menu-toggle" class="md:hidden text-slate-700 hover:text-slate-900 focus:outline-none ml-4" aria-label="Toggle menu" aria-expanded="false" aria-controls="mobile-menu"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" /></svg></button>
         </nav>
@@ -151,7 +151,7 @@
                 <h1 class="display-font mt-3 text-4xl font-extrabold md:text-5xl">Arizona Property &amp; Casualty Insurance Services</h1>
                 <p class="mt-4 max-w-3xl text-slate-200">Shield Assurance LLC helps Arizona families and small businesses evaluate home, auto, and business insurance with clear recommendations, practical risk planning, and responsive policy service.</p>
                 <div class="mt-8 flex flex-wrap gap-3">
-                  <a href="/contact/?type=review" data-analytics-quote="Services Hero Coverage Review" class="inline-flex items-center justify-center rounded-lg bg-white px-6 py-3 text-sm font-bold text-slate-900 hover:bg-slate-100">Request Your Coverage Review</a>
+                  <a href="/quote" data-analytics-quote="Services Hero Coverage Review" class="inline-flex items-center justify-center rounded-lg bg-white px-6 py-3 text-sm font-bold text-slate-900 hover:bg-slate-100">Request Your Coverage Review</a>
                 </div>
             </div>
         </section>
@@ -170,7 +170,7 @@
                     <article class="rounded-2xl border border-slate-200 bg-slate-50 p-6"><h3 class="text-lg font-bold text-slate-900">Umbrella Insurance</h3><p class="mt-2 text-sm leading-relaxed text-slate-600">Extra liability protection for high-risk exposures by extending underlying policy limits for personal liability claims beyond standard thresholds.</p></article>
                 </div>
                 <div class="mt-10 flex flex-wrap gap-3">
-                  <a href="/contact/?type=review" data-intake-route="personal" data-analytics-quote="Services Personal Coverage Review" class="inline-flex items-center justify-center rounded-lg bg-slate-900 px-5 py-3 text-sm font-bold text-white hover:bg-slate-800">Start Personal Coverage Review</a>
+                  <a href="/quote?entry=personal" data-intake-route="personal" data-analytics-quote="Services Personal Coverage Review" class="inline-flex items-center justify-center rounded-lg bg-slate-900 px-5 py-3 text-sm font-bold text-white hover:bg-slate-800">Start Personal Coverage Review</a>
                 </div>
             </div>
         </section>
@@ -190,7 +190,7 @@
                     <article class="rounded-2xl border border-slate-200 bg-white p-6"><h3 class="text-lg font-bold text-slate-900">Cyber Liability Insurance</h3><p class="mt-2 text-sm leading-relaxed text-slate-600">Cyber liability options can help address data incidents, recovery expenses, and third-party claims tied to digital risk events.</p></article>
                 </div>
                 <div class="mt-10 flex flex-wrap gap-3">
-                  <a href="/contact/?type=commercial" data-intake-route="commercial" data-analytics-quote="Services Business Coverage Review" class="inline-flex items-center justify-center rounded-lg bg-slate-900 px-5 py-3 text-sm font-bold text-white hover:bg-slate-800">Start Business Coverage Review</a>
+                  <a href="/quote?line=business" data-intake-route="commercial" data-analytics-quote="Services Business Coverage Review" class="inline-flex items-center justify-center rounded-lg bg-slate-900 px-5 py-3 text-sm font-bold text-white hover:bg-slate-800">Start Business Coverage Review</a>
                 </div>
             </div>
         </section>

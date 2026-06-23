@@ -11,6 +11,22 @@
     <meta property="og:description" content="Request a consultation for business and personal insurance solutions.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://www.shieldassurancellc.com/contact">
+    <script>
+      (function () {
+        try {
+          var params = new URLSearchParams(window.location.search);
+          var fromGuide = params.get("from") === "guide";
+          if (fromGuide) document.documentElement.classList.add("guide-intake-active");
+        } catch (_) {}
+      })();
+    </script>
+    <style>
+      html.guide-intake-active .page-hero,
+      html.guide-intake-active #consultation-form,
+      html.guide-intake-active .reveal.rounded-2xl.border.border-slate-200.bg-white.p-6.shadow-sm {
+        display: none !important;
+      }
+    </style>
 
     <link rel="manifest" href="/manifest.webmanifest">
     <link rel="preconnect" href="https://fonts.googleapis.com">

@@ -11,6 +11,28 @@
     <meta property="og:description" content="Request a consultation for business and personal insurance solutions.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://www.shieldassurancellc.com/contact/">
+    <script>
+      (function () {
+        try {
+          var params = new URLSearchParams(window.location.search);
+          var fromGuide = params.get("from") === "guide";
+          var quoteMode = params.get("quote") === "1";
+          if (fromGuide || quoteMode) {
+            document.documentElement.classList.add("guide-intake-active");
+          }
+        } catch (_) {}
+      })();
+    </script>
+    <style>
+      html.guide-intake-active #contact-hero,
+      html.guide-intake-active #standard-contact-layout,
+      html.guide-intake-active #general-consultation-form {
+        display: none !important;
+      }
+      html.guide-intake-active #quote-guide-flow {
+        display: block !important;
+      }
+    </style>
 
     <link rel="manifest" href="../manifest.webmanifest">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -143,7 +165,7 @@
     </header>
 
     <main>
-        <section class="page-hero pt-32 pb-16 text-white">
+        <section id="contact-hero" class="page-hero pt-32 pb-16 text-white">
             <div class="mx-auto max-w-7xl px-6 lg:px-8">
                 <p class="text-sm font-bold uppercase tracking-wide text-sky-200">Contact</p>
                 <h1 class="display-font mt-3 text-4xl font-extrabold md:text-5xl">Request Your Personalized Insurance Consultation</h1>
@@ -151,7 +173,851 @@
             </div>
         </section>
 
-        <section class="mx-auto max-w-7xl px-6 py-16 lg:px-8">
+        <section id="quote-guide-flow" class="hidden bg-slate-50 py-8 md:py-10">
+          <div class="mx-auto max-w-3xl px-6 lg:px-8">
+            <form id="quote-intake-form" class="quote-guide-shell rounded-3xl bg-white p-6 md:p-10" novalidate>
+              <div class="mb-4 flex justify-end">
+                <button type="button" id="quote-exit-btn" class="intake-ghost-btn">Exit</button>
+              </div>
+              <div id="quote-step-1" class="intake-screen is-active">
+                <h2 id="step-one-question" class="display-font text-3xl font-extrabold text-slate-900">Enter your asset details.</h2>
+
+                <div class="step-body-zone">
+                <div id="auto-step-content" class="mt-8 hidden space-y-4">
+                  <div class="grid gap-3 sm:grid-cols-2">
+                    <button type="button" class="choice-chip" data-auto-mode="vin" aria-pressed="false">Enter VIN</button>
+                    <button type="button" class="choice-chip" data-auto-mode="manual" aria-pressed="false">Select Year, Make, Model manually</button>
+                  </div>
+
+                  <div id="auto-vin-field" class="hidden space-y-3">
+                    <input id="auto-vin" type="text" maxlength="17" placeholder="17-Digit Vehicle Identification Number" class="intake-input">
+                    <div class="flex flex-wrap items-center gap-3">
+                      <button id="verify-vin-btn" type="button" class="intake-secondary-btn">Verify Vehicle</button>
+                      <span id="vin-status" class="text-sm text-slate-600" aria-live="polite"></span>
+                    </div>
+                  </div>
+
+                  <div id="auto-manual-fields" class="hidden grid gap-3 md:grid-cols-3">
+                    <select id="auto-year" class="intake-input"><option value="">Year</option></select>
+                    <select id="auto-make" class="intake-input"><option value="">Make</option></select>
+                    <select id="auto-model" class="intake-input"><option value="">Model</option></select>
+                  </div>
+                </div>
+
+                <div id="home-step-content" class="mt-8 hidden space-y-3">
+                  <input id="home-address" type="text" placeholder="Enter your property address..." class="intake-input">
+                </div>
+
+                <div id="business-step-content" class="mt-8 hidden space-y-3">
+                  <input id="business-industry" type="text" placeholder="What industry is your business in?" class="intake-input">
+                </div>
+
+                <p id="step-one-error" class="mt-4 hidden text-sm font-semibold text-rose-600"></p>
+                <p id="step-one-info" class="mt-3 hidden text-sm font-semibold text-sky-700"></p>
+                </div>
+                <div class="step-action-row mt-8">
+                  <button type="button" id="step-1-back" class="intake-ghost-btn">Back</button>
+                  <button type="button" id="to-step-2" class="intake-primary-btn">Continue</button>
+                </div>
+              </div>
+
+              <div id="quote-step-2" class="intake-screen hidden">
+                <h2 class="display-font text-3xl font-extrabold text-slate-900">Maximize your multi-policy discounts.</h2>
+                <div class="step-body-zone">
+                <p class="mt-3 text-lg font-semibold text-slate-800">Would you like to bundle other assets to optimize your coverage plans?</p>
+                <div class="mt-8 grid gap-3 sm:grid-cols-3">
+                  <button type="button" class="choice-chip bundle-choice" data-bundle="auto" aria-pressed="false">Add Vehicles</button>
+                  <button type="button" class="choice-chip bundle-choice" data-bundle="home" aria-pressed="false">Add Properties</button>
+                  <button type="button" class="choice-chip bundle-choice" data-bundle="business" aria-pressed="false">Add Commercial Operations</button>
+                </div>
+                </div>
+                <div class="step-action-row mt-8">
+                  <button type="button" id="step-2-back" class="intake-ghost-btn">Back</button>
+                  <button type="button" id="to-step-3" class="intake-primary-btn">Continue</button>
+                </div>
+              </div>
+
+              <div id="quote-step-3" class="intake-screen hidden">
+                <h2 class="display-font text-3xl font-extrabold text-slate-900">What is your full name?</h2>
+                <div class="step-body-zone">
+                <input id="route-name" type="text" placeholder="Full Name" class="mt-8 intake-input">
+                <p id="step-3-error" class="mt-4 hidden text-sm font-semibold text-rose-600"></p>
+                </div>
+                <div class="step-action-row mt-8">
+                  <button type="button" id="step-3-back" class="intake-ghost-btn">Back</button>
+                  <button type="button" id="to-step-4" class="intake-primary-btn">Continue</button>
+                </div>
+              </div>
+
+              <div id="quote-step-4" class="intake-screen hidden">
+                <h2 class="display-font text-3xl font-extrabold text-slate-900">What is your Arizona ZIP Code?</h2>
+                <div class="step-body-zone">
+                <input id="route-zip" type="text" inputmode="numeric" maxlength="5" placeholder="Arizona ZIP Code" class="mt-8 intake-input">
+                <p id="step-4-error" class="mt-4 hidden text-sm font-semibold text-rose-600"></p>
+                </div>
+                <div class="step-action-row mt-8">
+                  <button type="button" id="step-4-back" class="intake-ghost-btn">Back</button>
+                  <button type="button" id="to-step-5" class="intake-primary-btn">Continue</button>
+                </div>
+              </div>
+
+              <div id="quote-step-5" class="intake-screen hidden">
+                <h2 class="display-font text-3xl font-extrabold text-slate-900">What is your best phone number?</h2>
+                <div class="step-body-zone">
+                <input id="route-phone" type="tel" placeholder="Phone Number" class="mt-8 intake-input">
+                <p id="step-5-error" class="mt-4 hidden text-sm font-semibold text-rose-600"></p>
+                </div>
+                <div class="step-action-row mt-8">
+                  <button type="button" id="step-5-back" class="intake-ghost-btn">Back</button>
+                  <button type="button" id="to-step-6" class="intake-primary-btn">Continue</button>
+                </div>
+              </div>
+
+              <div id="quote-step-6" class="intake-screen hidden">
+                <h2 class="display-font text-3xl font-extrabold text-slate-900">What is your email address?</h2>
+                <div class="step-body-zone">
+                <input id="route-email" type="email" placeholder="Email Address" class="mt-8 intake-input">
+                <p id="step-6-error" class="mt-4 hidden text-sm font-semibold text-rose-600"></p>
+                </div>
+                <div class="step-action-row mt-8">
+                  <button type="button" id="step-6-back" class="intake-ghost-btn">Back</button>
+                  <button type="button" id="to-step-7" class="intake-primary-btn">Continue</button>
+                </div>
+              </div>
+
+              <div id="quote-step-7" class="intake-screen hidden">
+                <h2 class="display-font text-3xl font-extrabold text-slate-900">Review your plan</h2>
+                <div class="step-body-zone">
+                <div id="quote-summary" class="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-5"></div>
+                <p id="submit-status" class="mt-4 hidden text-sm font-semibold" role="status" aria-live="polite"></p>
+                </div>
+                <div class="step-action-row mt-8">
+                  <button type="button" id="step-7-back" class="intake-ghost-btn">Back</button>
+                  <button type="submit" id="submit-guide" class="intake-primary-btn">Submit this coverage plan for review</button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </section>
+
+        <script>
+        (function () {
+          var params = new URLSearchParams(window.location.search);
+          var fromGuide = params.get("from") === "guide";
+          var isQuoteRoute = params.get("quote") === "1" || fromGuide;
+
+          function normalizeCategory(value) {
+            var v = String(value || "").toLowerCase();
+            if (v.indexOf("auto") !== -1) return "auto";
+            if (v.indexOf("home") !== -1 || v.indexOf("property") !== -1) return "home";
+            if (v.indexOf("business") !== -1 || v.indexOf("commercial") !== -1) return "business";
+            return "";
+          }
+
+          var saved = {
+            line: "",
+            label: "",
+            tier: "",
+            summary: "",
+            coverageType: "",
+            message: ""
+          };
+
+          try {
+            saved.line = localStorage.getItem("shieldGuide_line") || "";
+            saved.label = localStorage.getItem("shieldGuide_lineLabel") || "";
+            saved.tier = localStorage.getItem("shieldGuide_tier") || "";
+            saved.summary = localStorage.getItem("shieldGuide_summary") || "";
+            saved.coverageType = localStorage.getItem("shieldGuide_coverageType") || "";
+            saved.message = localStorage.getItem("shieldGuide_message") || "";
+          } catch (_) {}
+
+          var urlLine = normalizeCategory(params.get("line") || "");
+          var urlType = normalizeCategory(params.get("type") || "");
+          var rawLineParam = String(params.get("line") || "").toLowerCase();
+          var entryType = String(params.get("entry") || "").toLowerCase();
+          if (!entryType && rawLineParam === "personal") entryType = "personal";
+          var category = normalizeCategory(urlLine || urlType || "");
+          if (!isQuoteRoute) {
+            document.documentElement.classList.remove("quote-guide-pending");
+            return;
+          }
+
+          document.documentElement.classList.add("quote-guide-active");
+          document.documentElement.classList.remove("quote-guide-pending");
+
+          var guideFlow = document.getElementById("quote-guide-flow");
+          var hero = document.getElementById("contact-hero");
+          var standardLayout = document.getElementById("standard-contact-layout");
+          var consultationWrap = document.getElementById("general-consultation-form");
+          if (guideFlow) guideFlow.classList.remove("hidden");
+          if (hero) hero.style.display = "none";
+          if (standardLayout) standardLayout.style.display = "none";
+          if (consultationWrap) consultationWrap.style.display = "none";
+
+          var state = {
+            category: category,
+            guideLabel: saved.label || (category ? category : ""),
+            guideTier: saved.tier || "",
+            guideSummary: saved.summary || "",
+            guideMessage: saved.message || "",
+            entryType: entryType,
+            sourceChannel: String(params.get("src") || "").trim(),
+            autoMode: "",
+            auto: { vin: "", year: "", make: "", model: "", verified: false },
+            home: { address: "" },
+            business: { industry: "" },
+            bundle: [],
+            route: { fullName: "", zip: "", phone: "", email: "" },
+            lastField: "",
+            touched: false,
+            submitted: false
+          };
+
+          function markTouched(fieldName) {
+            state.touched = true;
+            if (fieldName) state.lastField = fieldName;
+          }
+
+          function hasQuoteProgress() {
+            if (state.touched) return true;
+            if (state.autoMode) return true;
+            if (state.auto.vin || state.auto.year || state.auto.make || state.auto.model) return true;
+            if (state.home.address || state.business.industry) return true;
+            if (state.route.fullName || state.route.zip || state.route.phone || state.route.email) return true;
+            if (Array.isArray(state.bundle) && state.bundle.length > (state.category ? 1 : 0)) return true;
+            return false;
+          }
+
+          function getCompletionPercent() {
+            var checks = [];
+            checks.push(Boolean(state.category));
+            if (state.category === "auto") {
+              checks.push(Boolean(state.autoMode));
+              if (state.autoMode === "vin") checks.push(Boolean(state.auto.vin));
+              if (state.autoMode === "manual") checks.push(Boolean(state.auto.year && state.auto.make && state.auto.model));
+            } else if (state.category === "home") {
+              checks.push(Boolean(state.home.address));
+            } else if (state.category === "business") {
+              checks.push(Boolean(state.business.industry));
+            }
+            checks.push(Boolean(state.route.fullName));
+            checks.push(Boolean(state.route.zip));
+            checks.push(Boolean(state.route.phone));
+            checks.push(Boolean(state.route.email));
+            var done = checks.filter(Boolean).length;
+            return checks.length ? Math.round((done / checks.length) * 100) : 0;
+          }
+
+          function captureIncompleteQuote() {
+            if (state.submitted || !hasQuoteProgress()) return;
+            var site = window.ShieldSite;
+            if (!site || typeof site.upsertIncompleteForm !== "function") return;
+            var bundleRequested = Array.isArray(state.bundle) && state.bundle.length > 1;
+            site.upsertIncompleteForm({
+              id: "quote-intake-form",
+              formId: "quote-intake-form",
+              path: "/quote",
+              createdAt: new Date().toISOString(),
+              zipCode: state.route.zip,
+              coverageType: state.category || state.entryType || "general",
+              intakeRoute: state.category || "general",
+              fullName: state.route.fullName,
+              email: state.route.email,
+              phone: state.route.phone,
+              lastField: state.lastField || "quote-step",
+              completionPercent: getCompletionPercent(),
+              sourceChannel: state.sourceChannel,
+              bundleRequested: bundleRequested,
+              bundleLines: state.bundle.slice()
+            });
+          }
+
+          function leaveFlowToHome() {
+            if (!state.submitted && hasQuoteProgress()) {
+              var ok = window.confirm("Leaving this page will discard your quote progress. Do you want to continue?");
+              if (!ok) return;
+            }
+            window.location.href = "/";
+          }
+
+          var exitBtn = document.getElementById("quote-exit-btn");
+          if (exitBtn) exitBtn.addEventListener("click", leaveFlowToHome);
+          var step1BackBtn = document.getElementById("step-1-back");
+          if (step1BackBtn) step1BackBtn.addEventListener("click", leaveFlowToHome);
+
+          var makeModelMap = {
+            Acura: ["ILX", "Integra", "TLX", "RDX", "MDX", "ZDX"],
+            AlfaRomeo: ["Giulia", "Stelvio", "Tonale"],
+            Audi: ["A3", "A4", "A5", "A6", "Q3", "Q5", "Q7", "Q8", "e-tron"],
+            BMW: ["2 Series", "3 Series", "4 Series", "5 Series", "7 Series", "X1", "X3", "X5", "X7"],
+            Buick: ["Encore", "Encore GX", "Envision", "Enclave", "Envista"],
+            Cadillac: ["CT4", "CT5", "XT4", "XT5", "XT6", "Escalade"],
+            Chevrolet: ["Malibu", "Trax", "Trailblazer", "Equinox", "Blazer", "Traverse", "Tahoe", "Suburban", "Silverado", "Colorado"],
+            Chrysler: ["300", "Pacifica", "Voyager"],
+            Dodge: ["Charger", "Challenger", "Durango", "Hornet"],
+            Ford: ["Mustang", "Escape", "Edge", "Explorer", "Expedition", "Maverick", "Ranger", "F-150", "Bronco", "Bronco Sport"],
+            GMC: ["Canyon", "Sierra", "Terrain", "Acadia", "Yukon"],
+            Honda: ["Accord", "Civic", "CR-V", "HR-V", "Pilot", "Passport", "Odyssey", "Ridgeline"],
+            Hyundai: ["Elantra", "Sonata", "Kona", "Tucson", "Santa Fe", "Palisade", "Ioniq 5", "Ioniq 6"],
+            Infiniti: ["Q50", "QX50", "QX55", "QX60", "QX80"],
+            Jeep: ["Compass", "Cherokee", "Grand Cherokee", "Wrangler", "Gladiator", "Wagoneer", "Grand Wagoneer"],
+            Kia: ["K4", "K5", "Forte", "Soul", "Seltos", "Sportage", "Sorento", "Telluride", "Carnival", "EV6"],
+            Lexus: ["IS", "ES", "LS", "UX", "NX", "RX", "GX", "LX", "TX"],
+            Mazda: ["Mazda3", "Mazda6", "CX-30", "CX-5", "CX-50", "CX-70", "CX-90"],
+            MercedesBenz: ["C-Class", "E-Class", "S-Class", "GLA", "GLB", "GLC", "GLE", "GLS", "EQS"],
+            Nissan: ["Versa", "Sentra", "Altima", "Maxima", "Kicks", "Rogue", "Murano", "Pathfinder", "Frontier", "Titan", "Armada"],
+            Ram: ["1500", "2500", "3500", "ProMaster"],
+            Subaru: ["Impreza", "Legacy", "WRX", "Crosstrek", "Forester", "Outback", "Ascent"],
+            Tesla: ["Model 3", "Model Y", "Model S", "Model X", "Cybertruck"],
+            Toyota: ["Corolla", "Camry", "Prius", "Crown", "RAV4", "Highlander", "4Runner", "Sequoia", "Tacoma", "Tundra", "Sienna"],
+            Volkswagen: ["Jetta", "Passat", "Taos", "Tiguan", "Atlas", "ID.4"],
+            Volvo: ["S60", "S90", "XC40", "XC60", "XC90", "C40"],
+            Other: []
+          };
+
+          var stepIds = ["quote-step-1", "quote-step-2", "quote-step-3", "quote-step-4", "quote-step-5", "quote-step-6", "quote-step-7"];
+
+          function setStep(targetId) {
+            stepIds.forEach(function (id) {
+              var el = document.getElementById(id);
+              if (!el) return;
+              var active = id === targetId;
+              el.classList.toggle("hidden", !active);
+              el.classList.toggle("is-active", active);
+            });
+          }
+
+          function setChoiceGroup(buttons, selectedValue, attrName, activeClass) {
+            buttons.forEach(function (btn) {
+              var on = btn.getAttribute(attrName) === selectedValue;
+              btn.classList.toggle(activeClass, on);
+              btn.setAttribute("aria-pressed", on ? "true" : "false");
+            });
+          }
+
+          function validateEmail(email) {
+            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email || "").trim());
+          }
+
+          function normalizePhone(phone) {
+            return String(phone || "").replace(/\D/g, "");
+          }
+
+          function validateAZZip(zip) {
+            return /^85\d{3}|86\d{3}$/.test(String(zip || "").trim());
+          }
+
+          function applyCategoryToStepOne() {
+            var stepOneQuestion = document.getElementById("step-one-question");
+            if (stepOneQuestion) {
+              if (state.category === "auto") stepOneQuestion.textContent = "Enter your vehicle details.";
+              else if (state.category === "home") stepOneQuestion.textContent = "Enter your property address.";
+              else if (state.category === "business") stepOneQuestion.textContent = "What industry is your business in?";
+              else if (state.entryType === "personal") stepOneQuestion.textContent = "Choose your personal coverage path.";
+              else stepOneQuestion.textContent = "Choose your primary coverage line.";
+            }
+            ["auto", "home", "business"].forEach(function (key) {
+              var panel = document.getElementById(key + "-step-content");
+              if (!panel) return;
+              panel.classList.toggle("hidden", key !== state.category);
+            });
+          }
+
+          function showStepInfo(msg) {
+            var el = document.getElementById("step-one-info");
+            if (!el) return;
+            if (!msg) {
+              el.classList.add("hidden");
+              el.textContent = "";
+              return;
+            }
+            el.textContent = msg;
+            el.classList.remove("hidden");
+          }
+
+          function renderLinePicker() {
+            var existing = document.getElementById("line-picker");
+            if (existing) existing.remove();
+            if (state.category) return;
+
+            var anchor = document.getElementById("step-one-question");
+            if (!anchor || !anchor.parentNode) return;
+
+            var wrap = document.createElement("div");
+            wrap.id = "line-picker";
+            wrap.className = "mt-8 grid gap-3 sm:grid-cols-3";
+            if (state.entryType === "personal") {
+              wrap.innerHTML = ""
+                + '<button type="button" class="choice-chip" data-line-choice="home" aria-pressed="false">Home</button>'
+                + '<button type="button" class="choice-chip" data-line-choice="auto" aria-pressed="false">Auto</button>'
+                + '<button type="button" class="choice-chip" data-line-choice="both" aria-pressed="false">Home + Auto</button>';
+            } else {
+              wrap.innerHTML = ""
+                + '<button type="button" class="choice-chip" data-line-choice="business" aria-pressed="false">Business</button>'
+                + '<button type="button" class="choice-chip" data-line-choice="home" aria-pressed="false">Home</button>'
+                + '<button type="button" class="choice-chip" data-line-choice="auto" aria-pressed="false">Auto</button>';
+            }
+            anchor.insertAdjacentElement("afterend", wrap);
+
+            var lineButtons = Array.prototype.slice.call(wrap.querySelectorAll("[data-line-choice]"));
+            lineButtons.forEach(function (btn) {
+              btn.addEventListener("click", function () {
+                var choice = btn.getAttribute("data-line-choice") || "";
+                markTouched("line-choice");
+                if (choice === "both") {
+                  state.category = "auto";
+                  state.bundle = ["auto", "home"];
+                  showStepInfo("Great choice. We'll start with auto. Your agent will add property discounts on your call.");
+                } else {
+                  state.category = choice;
+                  state.bundle = state.category ? [state.category] : [];
+                  showStepInfo("");
+                }
+                state.guideLabel = state.category;
+                wrap.remove();
+                applyCategoryToStepOne();
+                refreshBundleSelection();
+                showStepError("step-one-error", "");
+              });
+            });
+          }
+
+          var yearSelect = document.getElementById("auto-year");
+          var makeSelect = document.getElementById("auto-make");
+          var modelSelect = document.getElementById("auto-model");
+          if (yearSelect) {
+            var y = new Date().getFullYear();
+            for (var yr = y + 1; yr >= 1995; yr -= 1) {
+              var yOpt = document.createElement("option");
+              yOpt.value = String(yr);
+              yOpt.textContent = String(yr);
+              yearSelect.appendChild(yOpt);
+            }
+          }
+          if (makeSelect) {
+            Object.keys(makeModelMap).forEach(function (makeKey) {
+              var mOpt = document.createElement("option");
+              mOpt.value = makeKey;
+              mOpt.textContent = makeKey.replace("MercedesBenz", "Mercedes-Benz").replace("AlfaRomeo", "Alfa Romeo");
+              makeSelect.appendChild(mOpt);
+            });
+          }
+          if (makeSelect && modelSelect) {
+            makeSelect.addEventListener("change", function () {
+              var makeVal = makeSelect.value;
+              var models = makeModelMap[makeVal] || [];
+              modelSelect.innerHTML = '<option value="">Model</option>';
+              models.forEach(function (model) {
+                var opt = document.createElement("option");
+                opt.value = model;
+                opt.textContent = model;
+                modelSelect.appendChild(opt);
+              });
+            });
+          }
+
+          var autoModeButtons = Array.prototype.slice.call(document.querySelectorAll("[data-auto-mode]"));
+          var vinField = document.getElementById("auto-vin-field");
+          var manualField = document.getElementById("auto-manual-fields");
+          autoModeButtons.forEach(function (btn) {
+            btn.addEventListener("click", function () {
+              state.autoMode = btn.getAttribute("data-auto-mode") || "";
+              markTouched("auto-mode");
+              setChoiceGroup(autoModeButtons, state.autoMode, "data-auto-mode", "is-selected-navy");
+              if (vinField) vinField.classList.toggle("hidden", state.autoMode !== "vin");
+              if (manualField) manualField.classList.toggle("hidden", state.autoMode !== "manual");
+            });
+          });
+
+          var verifyVinBtn = document.getElementById("verify-vin-btn");
+          if (verifyVinBtn) {
+            verifyVinBtn.addEventListener("click", function () {
+              var vin = (document.getElementById("auto-vin").value || "").trim();
+              var status = document.getElementById("vin-status");
+              if (!status) return;
+              if (vin.length !== 17) {
+                state.auto.verified = false;
+                status.className = "text-sm font-semibold text-rose-600";
+                status.textContent = "Please enter all 17 VIN characters first.";
+                return;
+              }
+              verifyVinBtn.disabled = true;
+              status.className = "text-sm text-slate-600";
+              status.textContent = "Verifying vehicle details...";
+              setTimeout(function () {
+                state.auto.verified = true;
+                verifyVinBtn.disabled = false;
+                status.className = "text-sm font-semibold text-emerald-600";
+                status.textContent = "Vehicle details verified.";
+              }, 650);
+            });
+          }
+
+          var bundleButtons = Array.prototype.slice.call(document.querySelectorAll(".bundle-choice"));
+          state.bundle = state.category ? [state.category] : [];
+          function refreshBundleSelection() {
+            bundleButtons.forEach(function (btn) {
+              var key = btn.getAttribute("data-bundle") || "";
+              var selected = state.bundle.indexOf(key) !== -1;
+              btn.classList.toggle("is-selected-blue", selected);
+              btn.setAttribute("aria-pressed", selected ? "true" : "false");
+            });
+          }
+          bundleButtons.forEach(function (btn) {
+            var key = btn.getAttribute("data-bundle") || "";
+            btn.addEventListener("click", function () {
+              var isPrimary = key === state.category;
+              if (isPrimary) return;
+              markTouched("bundle-selection");
+              var index = state.bundle.indexOf(key);
+              if (index === -1) {
+                state.bundle.push(key);
+              } else {
+                state.bundle.splice(index, 1);
+              }
+              refreshBundleSelection();
+            });
+          });
+          refreshBundleSelection();
+          applyCategoryToStepOne();
+          renderLinePicker();
+
+          var quoteForm = document.getElementById("quote-intake-form");
+          if (quoteForm) {
+            quoteForm.querySelectorAll("input, select, textarea").forEach(function (field) {
+              var marker = field.id || field.name || "quote-field";
+              field.addEventListener("input", function () {
+                var value = (field.value || "").toString().trim();
+                if (value) markTouched(marker);
+                state.lastField = marker;
+              });
+              field.addEventListener("change", function () {
+                var value = (field.value || "").toString().trim();
+                if (value) markTouched(marker);
+                state.lastField = marker;
+              });
+              field.addEventListener("focus", function () {
+                state.lastField = marker;
+              });
+            });
+          }
+
+          function showStepError(id, msg) {
+            var el = document.getElementById(id);
+            if (!el) return;
+            if (!msg) {
+              el.classList.add("hidden");
+              el.textContent = "";
+              return;
+            }
+            el.textContent = msg;
+            el.classList.remove("hidden");
+          }
+
+          function saveLeadToLocalQueue(payload) {
+            var queueKey = "shieldLocalLeadsQueue";
+            var queued = [];
+            try {
+              queued = JSON.parse(localStorage.getItem(queueKey) || "[]");
+            } catch (_) {
+              queued = [];
+            }
+            queued.push(payload);
+            localStorage.setItem(queueKey, JSON.stringify(queued));
+            return true;
+          }
+
+          document.getElementById("to-step-2").addEventListener("click", function () {
+            if (!state.category) {
+              if (state.entryType === "personal") {
+                showStepError("step-one-error", "Please choose Home, Auto, or Home + Auto to continue.");
+              } else {
+                showStepError("step-one-error", "Please choose Business, Home, or Auto to continue.");
+              }
+              return;
+            }
+            if (state.category === "auto") {
+              if (!state.autoMode) {
+                showStepError("step-one-error", "Please choose Enter VIN or manual Year/Make/Model.");
+                return;
+              }
+              if (state.autoMode === "vin") {
+                state.auto.vin = (document.getElementById("auto-vin").value || "").trim();
+                if (!state.auto.vin) {
+                  showStepError("step-one-error", "Please enter your 17-digit VIN.");
+                  return;
+                }
+                if (state.auto.vin.length !== 17) {
+                  showStepError("step-one-error", "VIN must be exactly 17 characters.");
+                  return;
+                }
+              } else {
+                state.auto.year = (yearSelect && yearSelect.value ? yearSelect.value : "").trim();
+                state.auto.make = (makeSelect && makeSelect.value ? makeSelect.value : "").trim();
+                state.auto.model = (modelSelect && modelSelect.value ? modelSelect.value : "").trim();
+                if (!state.auto.year) {
+                  showStepError("step-one-error", "Please select a vehicle year.");
+                  return;
+                }
+                if (!state.auto.make) {
+                  showStepError("step-one-error", "Please select a vehicle make.");
+                  return;
+                }
+                if (!state.auto.model) {
+                  showStepError("step-one-error", "Please select a vehicle model.");
+                  return;
+                }
+              }
+            } else if (state.category === "home") {
+              state.home.address = (document.getElementById("home-address").value || "").trim();
+              if (!state.home.address) {
+                showStepError("step-one-error", "Please enter the property address.");
+                return;
+              }
+            } else {
+              state.business.industry = (document.getElementById("business-industry").value || "").trim();
+              if (!state.business.industry) {
+                showStepError("step-one-error", "Please enter your business industry.");
+                return;
+              }
+            }
+            showStepError("step-one-error", "");
+            setStep("quote-step-2");
+          });
+
+          document.getElementById("step-2-back").addEventListener("click", function () { setStep("quote-step-1"); });
+          document.getElementById("to-step-3").addEventListener("click", function () { setStep("quote-step-3"); });
+
+          document.getElementById("step-3-back").addEventListener("click", function () { setStep("quote-step-2"); });
+          document.getElementById("to-step-4").addEventListener("click", function () {
+            state.route.fullName = (document.getElementById("route-name").value || "").trim();
+            if (!state.route.fullName) {
+              showStepError("step-3-error", "Please enter your full name.");
+              return;
+            }
+            showStepError("step-3-error", "");
+            setStep("quote-step-4");
+          });
+
+          document.getElementById("step-4-back").addEventListener("click", function () { setStep("quote-step-3"); });
+          document.getElementById("to-step-5").addEventListener("click", function () {
+            state.route.zip = (document.getElementById("route-zip").value || "").trim();
+            if (!state.route.zip) {
+              showStepError("step-4-error", "Please enter your Arizona ZIP Code.");
+              return;
+            }
+            if (!validateAZZip(state.route.zip)) {
+              showStepError("step-4-error", "Please enter a valid Arizona ZIP Code.");
+              return;
+            }
+            showStepError("step-4-error", "");
+            setStep("quote-step-5");
+          });
+
+          document.getElementById("step-5-back").addEventListener("click", function () { setStep("quote-step-4"); });
+          document.getElementById("to-step-6").addEventListener("click", function () {
+            state.route.phone = (document.getElementById("route-phone").value || "").trim();
+            if (!state.route.phone) {
+              showStepError("step-5-error", "Please enter your phone number.");
+              return;
+            }
+            if (normalizePhone(state.route.phone).length < 10) {
+              showStepError("step-5-error", "Please enter a complete phone number.");
+              return;
+            }
+            showStepError("step-5-error", "");
+            setStep("quote-step-6");
+          });
+
+          document.getElementById("step-6-back").addEventListener("click", function () { setStep("quote-step-5"); });
+          document.getElementById("to-step-7").addEventListener("click", function () {
+            state.route.email = (document.getElementById("route-email").value || "").trim();
+            if (!state.route.email) {
+              showStepError("step-6-error", "Please enter your email address.");
+              return;
+            }
+            if (!validateEmail(state.route.email)) {
+              showStepError("step-6-error", "Please enter a valid email address.");
+              return;
+            }
+            showStepError("step-6-error", "");
+
+            var summaryEl = document.getElementById("quote-summary");
+            var detail = "";
+            if (state.category === "auto") {
+              detail = state.autoMode === "vin"
+                ? "VIN: " + state.auto.vin
+                : "Vehicle: " + [state.auto.year, state.auto.make, state.auto.model].join(" ");
+            } else if (state.category === "home") {
+              detail = "Property address: " + state.home.address;
+            } else {
+              detail = "Industry: " + state.business.industry;
+            }
+            var bundleLabel = { auto: "Vehicles", home: "Properties", business: "Commercial Operations" };
+            var bundles = state.bundle.map(function (b) { return bundleLabel[b] || b; }).join(", ");
+            if (summaryEl) {
+              summaryEl.innerHTML = ""
+                + "<div class=\"space-y-2 text-sm text-slate-700\">"
+                + "<p><span class=\"font-semibold text-slate-900\">Primary coverage:</span> " + state.guideLabel + "</p>"
+                + "<p><span class=\"font-semibold text-slate-900\">Details:</span> " + detail + "</p>"
+                + "<p><span class=\"font-semibold text-slate-900\">Bundles:</span> " + bundles + "</p>"
+                + "<p><span class=\"font-semibold text-slate-900\">Full Name:</span> " + state.route.fullName + "</p>"
+                + "<p><span class=\"font-semibold text-slate-900\">Arizona ZIP:</span> " + state.route.zip + "</p>"
+                + "<p><span class=\"font-semibold text-slate-900\">Phone:</span> " + state.route.phone + "</p>"
+                + "<p><span class=\"font-semibold text-slate-900\">Email:</span> " + state.route.email + "</p>"
+                + "</div>";
+            }
+            setStep("quote-step-7");
+          });
+
+          document.getElementById("step-7-back").addEventListener("click", function () { setStep("quote-step-6"); });
+
+          document.getElementById("quote-intake-form").addEventListener("submit", async function (event) {
+            event.preventDefault();
+
+            var status = document.getElementById("submit-status");
+            var submitBtn = document.getElementById("submit-guide");
+
+            if (normalizePhone(state.route.phone).length < 10 || !validateEmail(state.route.email)) {
+              if (status) {
+                status.className = "mt-4 text-sm font-semibold text-rose-600";
+                status.textContent = "Please complete both a valid phone number and email address.";
+                status.classList.remove("hidden");
+              }
+              return;
+            }
+
+            var payload = {
+              source: "coverage-guide-intake-v3",
+              submittedAt: new Date().toISOString(),
+              page: "/quote",
+              guide: {
+                category: state.category,
+                label: state.guideLabel,
+                tier: state.guideTier,
+                summary: state.guideSummary,
+                message: state.guideMessage
+              },
+              routingContext: {
+                sourceChannel: state.sourceChannel,
+                entryType: state.entryType,
+                selectedLine: state.category,
+                bundleRequested: state.bundle.length > 1,
+                bundleLines: state.bundle.slice()
+              },
+              assets: {
+                auto: { mode: state.autoMode, vin: state.auto.vin, year: state.auto.year, make: state.auto.make, model: state.auto.model, verified: state.auto.verified },
+                home: state.home,
+                business: state.business,
+                bundleSelections: state.bundle.slice()
+              },
+              routing: {
+                fullName: state.route.fullName,
+                zipCode: state.route.zip,
+                phone: state.route.phone,
+                email: state.route.email
+              }
+            };
+
+            var riskDetails = [
+              "Coverage Plan Review Request",
+              "Primary Category: " + payload.guide.category,
+              "Primary Label: " + payload.guide.label,
+              "Tier: " + (payload.guide.tier || "Standard"),
+              "Summary: " + (payload.guide.summary || ""),
+              "",
+              "Auto: " + JSON.stringify(payload.assets.auto),
+              "Home: " + JSON.stringify(payload.assets.home),
+              "Business: " + JSON.stringify(payload.assets.business),
+              "Bundle: " + payload.assets.bundleSelections.join(", "),
+              "",
+              "Full Name: " + payload.routing.fullName,
+              "AZ ZIP: " + payload.routing.zipCode,
+              "Phone: " + payload.routing.phone,
+              "Email: " + payload.routing.email
+            ].join("\n");
+
+            if (submitBtn) {
+              submitBtn.disabled = true;
+              submitBtn.textContent = "Submitting...";
+            }
+            if (status) {
+              status.className = "mt-4 text-sm text-slate-600";
+              status.textContent = "Submitting your coverage plan...";
+              status.classList.remove("hidden");
+            }
+
+            try {
+              var backend = window.ShieldBackend;
+              if (backend && typeof backend.createLead === "function" && backend.isConfigured) {
+                await backend.createLead({
+                  clientName: payload.routing.fullName,
+                  email: payload.routing.email,
+                  phone: payload.routing.phone,
+                  insuranceLine: payload.guide.category,
+                  riskDetails: riskDetails,
+                  intakeRoute: "coverage-guide-intake-v3",
+                  sourcePage: "/quote",
+                  metadata: payload
+                });
+              } else {
+                saveLeadToLocalQueue(payload);
+              }
+
+              if (status) {
+                status.className = "mt-4 text-sm font-semibold text-emerald-600";
+                status.textContent = "Your plan has been submitted successfully. We will contact you shortly.";
+              }
+              state.submitted = true;
+              if (submitBtn) submitBtn.classList.add("hidden");
+            } catch (err) {
+              var savedLocally = false;
+              try {
+                savedLocally = saveLeadToLocalQueue(payload);
+              } catch (_) {
+                savedLocally = false;
+              }
+              if (savedLocally) {
+                if (status) {
+                  status.className = "mt-4 text-sm font-semibold text-emerald-600";
+                  status.textContent = "Your plan was saved and queued successfully. We will contact you shortly.";
+                }
+                state.submitted = true;
+                if (submitBtn) submitBtn.classList.add("hidden");
+              } else if (status) {
+                status.className = "mt-4 text-sm font-semibold text-rose-600";
+                status.textContent = "Submission did not complete. Please try again or call us directly.";
+              }
+            } finally {
+              if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = "Submit this coverage plan for review";
+              }
+            }
+          });
+
+          document.querySelectorAll("a[href]").forEach(function (link) {
+            var href = link.getAttribute("href") || "";
+            if (!href || href.charAt(0) === "#" || href.indexOf("tel:") === 0 || href.indexOf("mailto:") === 0) return;
+            link.addEventListener("click", function (event) {
+              if (href.indexOf("/quote") === 0) return;
+              if (state.submitted) return;
+              if (!hasQuoteProgress()) return;
+              var ok = window.confirm("Leaving this page will discard your quote progress. Do you want to continue?");
+              if (!ok) event.preventDefault();
+            });
+          });
+
+          window.addEventListener("beforeunload", function () {
+            captureIncompleteQuote();
+          });
+
+          setStep("quote-step-1");
+        })();
+        </script>
+
+        <section id="standard-contact-layout" class="mx-auto max-w-7xl px-6 py-16 lg:px-8">
             <div class="grid gap-8 lg:grid-cols-[1fr_1.25fr] lg:items-start">
                 <div class="reveal rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
                     <h2 class="display-font text-2xl font-bold text-slate-900">Direct Contact</h2>
@@ -164,6 +1030,7 @@
                     <p class="mt-6 text-sm text-slate-600">Business hours: Mon-Fri, 8:00 AM to 6:00 PM. Carrier claims access may be available 24/7 depending on your provider.</p>
                 </div>
 
+                <div id="general-consultation-form">
                 <form id="consultation-form" class="reveal rounded-2xl border border-slate-700 bg-slate-900 p-6 shadow-xl text-white" name="consultation" method="POST" data-netlify="true" netlify-honeypot="bot-field" action="/thank-you/" novalidate>
                     <input type="hidden" name="form-name" value="consultation">
                     <input type="hidden" name="crmSource" id="crm-source" value="website">
@@ -211,13 +1078,14 @@
                     <button type="submit" data-analytics-quote="Contact Form Submit CTA" class="mt-5 w-full rounded-lg bg-shieldBlue py-3 text-sm font-bold text-white transition hover:bg-sky-400">Submit Consultation Request</button>
                     <p id="form-status" class="mt-3 hidden text-sm" role="status" aria-live="polite"></p>
                 </form>
+                </div>
             </div>
         </section>
     </main>
 
     <footer class="bg-slate-900 text-slate-400 border-t border-slate-800 font-sans">
-      <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-8">
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 pb-8 border-b border-slate-800">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-8">
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 pb-5">
           <div class="space-y-3">
             <div class="flex items-center gap-2 text-white">
               <span class="grid h-8 w-8 place-content-center rounded-xl bg-slate-800 text-white"><i data-lucide="shield-check" class="h-4 w-4"></i></span>
@@ -259,7 +1127,7 @@
           </div>
         </div>
 
-        <div class="border-t border-slate-800 pt-6 mt-8 text-xs text-slate-500 flex flex-col md:flex-row md:justify-between gap-2">
+        <div class="border-t border-slate-800 pt-4 mt-4 text-xs text-slate-500 flex flex-col md:flex-row md:justify-between gap-2">
           <p>&copy; <span data-current-year></span> Shield Assurance LLC. All rights reserved. <a href="/admin/" rel="nofollow" aria-label="Admin login" class="ml-2 text-xs text-slate-400 hover:text-slate-300">admin</a></p>
           <p>Coverage subject to policy terms, conditions, limitations, and exclusions. Submitting a request does not bind coverage.</p>
         </div>
