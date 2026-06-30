@@ -75,7 +75,7 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     const submitToBackend = async () => {
-        if (!window.ShieldBackend || !window.ShieldBackend.isConfigured) {
+        if (!window.ShieldBackend || typeof window.ShieldBackend.createLead !== "function") {
             return false;
         }
 

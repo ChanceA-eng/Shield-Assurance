@@ -483,54 +483,6 @@ document.addEventListener("DOMContentLoaded", () => {
         return `${minutes}m ${remainder}s`;
     };
 
-    const formatLineLabel = (line) => {
-        const normalized = String(line || "").trim().toLowerCase();
-        if (normalized === "auto-fleet") return "Auto / Fleet";
-        if (normalized === "property") return "Property";
-        if (normalized === "commercial") return "Commercial";
-        if (normalized === "personal") return "Personal";
-        if (!normalized) return "General";
-        return normalized.replace(/[-_]/g, " ").replace(/\b\w/g, (ch) => ch.toUpperCase());
-    };
-
-    const getLeadRoutingContext = (lead) => {
-        const metadata = lead && typeof lead.metadata === "object" ? lead.metadata : {};
-        const routing = metadata.routingContext && typeof metadata.routingContext === "object" ? metadata.routingContext : {};
-        return {
-            sourceChannel: String(routing.sourceChannel || "").trim(),
-            bundleRequested: Boolean(routing.bundleRequested),
-            bundleLines: Array.isArray(routing.bundleLines) ? routing.bundleLines : []
-        };
-    };
-
-    const countLeadLines = (leads) => {
-        const counts = { auto: 0, property: 0, commercial: 0 };
-        (Array.isArray(leads) ? leads : []).forEach((lead) => {
-            const line = String((lead && lead.insurance_line) || "").trim().toLowerCase();
-            if (line === "auto-fleet" || line.includes("auto") || line.includes("fleet")) {
-                counts.auto += 1;
-                return;
-            }
-            if (line === "property" || line.includes("property") || line.includes("home")) {
-                counts.property += 1;
-                return;
-            }
-            if (line === "commercial" || line.includes("commercial") || line.includes("business")) {
-                counts.commercial += 1;
-            }
-        });
-        return counts;
-    };
-
-    const applyLeadFlowCounters = (autoCount, propertyCount, commercialCount) => {
-        if (analyticsTargets.autoPrimary) analyticsTargets.autoPrimary.textContent = String(autoCount);
-        if (analyticsTargets.propertyPrimary) analyticsTargets.propertyPrimary.textContent = String(propertyCount);
-        if (analyticsTargets.commercialPrimary) analyticsTargets.commercialPrimary.textContent = String(commercialCount);
-        if (analyticsTargets.autoSecondary) analyticsTargets.autoSecondary.textContent = String(autoCount);
-        if (analyticsTargets.propertySecondary) analyticsTargets.propertySecondary.textContent = String(propertyCount);
-        if (analyticsTargets.commercialSecondary) analyticsTargets.commercialSecondary.textContent = String(commercialCount);
-    };
-
     const renderGeoBreakdown = (node, bucket) => {
         if (!node) {
             return;
@@ -574,15 +526,12 @@ document.addEventListener("DOMContentLoaded", () => {
             .slice(0, 25)
             .map((row) => {
                 const prospect = [row.fullName, row.email, row.phone].filter(Boolean).join(" / ") || "Anonymous visitor";
-                const lineLabel = formatLineLabel(row.coverageType || row.intakeRoute || "general");
-                const bundleFlag = row.bundleRequested ? "<span class=\"mt-1 inline-block rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-800\">Bundle Lead</span>" : "";
-                const source = row.sourceChannel ? `<span class=\"mt-1 block text-xs text-slate-500\">Source: ${escapeHtml(row.sourceChannel)}</span>` : "";
                 return `
                     <tr>
                         <td class="px-4 py-3 align-top text-slate-700">${escapeHtml(formatDate(row.createdAt))}</td>
                         <td class="px-4 py-3 align-top text-slate-700">${escapeHtml(row.region || "Unknown")} ${row.zipCode ? `<span class="block text-xs text-slate-500">${escapeHtml(row.zipCode)}</span>` : ""}</td>
                         <td class="px-4 py-3 align-top text-slate-700">${escapeHtml(prospect)}</td>
-                        <td class="px-4 py-3 align-top text-slate-700">${escapeHtml(lineLabel)}${bundleFlag}${source}</td>
+                        <td class="px-4 py-3 align-top text-slate-700">${escapeHtml(row.coverageType || row.intakeRoute || "general")}</td>
                         <td class="px-4 py-3 align-top text-slate-700">${Number(row.completionPercent || 0)}%</td>
                         <td class="px-4 py-3 align-top text-slate-700">${escapeHtml(row.lastField || "-")}</td>
                     </tr>`;
@@ -646,14 +595,12 @@ document.addEventListener("DOMContentLoaded", () => {
         if (analyticsTargets.formSubmissions) analyticsTargets.formSubmissions.textContent = String(formSubmissions);
         if (analyticsTargets.formAbandons) analyticsTargets.formAbandons.textContent = String(activeAbandons);
         if (analyticsTargets.formAbandonments) analyticsTargets.formAbandonments.textContent = String(activeAbandons);
-        // Lead-flow cards should reflect submitted leads first; fallback to click analytics when empty.
-        const leadCounts = countLeadLines(state.leads);
-        const hasLeadCounts = (leadCounts.auto + leadCounts.property + leadCounts.commercial) > 0;
-        applyLeadFlowCounters(
-            hasLeadCounts ? leadCounts.auto : autoClicks,
-            hasLeadCounts ? leadCounts.property : propertyClicks,
-            hasLeadCounts ? leadCounts.commercial : commercialClicks
-        );
+        if (analyticsTargets.autoPrimary) analyticsTargets.autoPrimary.textContent = String(autoClicks);
+        if (analyticsTargets.propertyPrimary) analyticsTargets.propertyPrimary.textContent = String(propertyClicks);
+        if (analyticsTargets.commercialPrimary) analyticsTargets.commercialPrimary.textContent = String(commercialClicks);
+        if (analyticsTargets.autoSecondary) analyticsTargets.autoSecondary.textContent = String(autoClicks);
+        if (analyticsTargets.propertySecondary) analyticsTargets.propertySecondary.textContent = String(propertyClicks);
+        if (analyticsTargets.commercialSecondary) analyticsTargets.commercialSecondary.textContent = String(commercialClicks);
 
         renderIncompleteForms(Array.isArray(analytics.incompleteForms) ? analytics.incompleteForms : []);
         renderGeoBreakdown(analyticsTargets.geoPrimary, analytics.geographyByRegion);
@@ -687,306 +634,18 @@ document.addEventListener("DOMContentLoaded", () => {
         return value.toLocaleString();
     };
 
-    const normalizeStatusFilterValue = (value) => {
-        const raw = String(value || "").trim();
-        const lowered = raw.toLowerCase();
-        if (!raw || lowered === "all" || lowered.includes("all")) {
-            return "All";
-        }
-        if (lowered === "new") return "New";
-        if (lowered === "in progress" || lowered === "in_progress" || lowered === "inprogress") return "In Progress";
-        if (lowered === "quoted") return "Quoted";
-        return raw;
-    };
-
-    const cleanRiskText = (value) => {
-        const raw = String(value || "").trim();
-        if (!raw) {
-            return "-";
-        }
-
-        const compact = raw.replace(/\s+/g, " ").trim();
-        if (compact.length <= 220) {
-            return compact;
-        }
-
-        return `${compact.slice(0, 217)}...`;
-    };
-
-    const normalizeBundleLabel = (value) => {
-        const raw = String(value || "").trim().toLowerCase();
-        if (!raw) {
-            return "";
-        }
-        if (raw.includes("auto") || raw.includes("fleet") || raw.includes("vehicle")) return "Auto";
-        if (raw.includes("home") || raw.includes("property")) return "Property";
-        if (raw.includes("business") || raw.includes("commercial")) return "Business";
-        return raw.replace(/[-_]/g, " ").replace(/\b\w/g, (ch) => ch.toUpperCase());
-    };
-
-    const extractLeadMetadata = (lead) => {
-        const metadata = lead && typeof lead.metadata === "object" ? lead.metadata : {};
-        return {
-            guide: metadata.guide && typeof metadata.guide === "object" ? metadata.guide : {},
-            assets: metadata.assets && typeof metadata.assets === "object" ? metadata.assets : {},
-            routing: metadata.routing && typeof metadata.routing === "object" ? metadata.routing : {},
-            routingContext: metadata.routingContext && typeof metadata.routingContext === "object" ? metadata.routingContext : {}
-        };
-    };
-
-    const extractRiskSegment = (source, label) => {
-        const pattern = new RegExp(`${label}:\\s*(.+?)(?=\\s+(?:Auto|Home|Business|Bundle|Full Name|AZ ZIP|Phone|Email|Primary Category|Primary Label|Tier|Summary):|$)`, "is");
-        const match = String(source || "").match(pattern);
-        return match ? String(match[1] || "").trim() : "";
-    };
-
-    const parseJsonSegment = (value) => {
-        const raw = String(value || "").trim();
-        if (!raw || !raw.startsWith("{")) {
-            return null;
-        }
-
-        try {
-            return JSON.parse(raw);
-        } catch (_) {
-            return null;
-        }
-    };
-
-    const formatAutoRiskLine = (autoData) => {
-        if (!autoData || typeof autoData !== "object") {
-            return "";
-        }
-
-        const year = String(autoData.year || "").trim();
-        const make = String(autoData.make || "").trim();
-        const model = String(autoData.model || "").trim();
-        const vin = String(autoData.vin || "").trim();
-        const descriptor = [year, make, model].filter(Boolean).join(" ");
-        const mode = String(autoData.mode || "").trim().toLowerCase();
-
-        if (descriptor) {
-            if (mode === "manual") {
-                return `Auto: ${descriptor} (Manual Entry)`;
-            }
-            return `Auto: ${descriptor}`;
-        }
-
-        if (vin) {
-            return `Auto: VIN ${vin}`;
-        }
-
-        return "";
-    };
-
-    const formatHomeRiskLine = (homeData) => {
-        if (!homeData || typeof homeData !== "object") {
-            return "";
-        }
-
-        const address = String(homeData.address || "").trim();
-        return address ? `Home: ${address}` : "";
-    };
-
-    const formatBusinessRiskLine = (businessData) => {
-        if (!businessData || typeof businessData !== "object") {
-            return "";
-        }
-
-        const industry = String(businessData.industry || "").trim();
-        return industry ? `Business: ${industry}` : "";
-    };
-
-    const extractZipCode = (lead) => {
-        const { routing } = extractLeadMetadata(lead);
-        const fromMetadata = String(routing.zipCode || routing.zip || "").trim();
-        if (fromMetadata) {
-            return fromMetadata;
-        }
-
-        const raw = String(lead && lead.risk_details || "");
-        const match = raw.match(/AZ ZIP:\s*([^\n]+)/i);
-        return match ? String(match[1] || "").trim() : "";
-    };
-
-    const extractTierLabel = (lead) => {
-        const { guide } = extractLeadMetadata(lead);
-        const fromMetadata = String(guide.tier || "").trim();
-        if (fromMetadata) {
-            return fromMetadata;
-        }
-
-        const raw = String(lead && lead.risk_details || "");
-        const match = raw.match(/Tier:\s*([^\n]+)/i);
-        return match ? String(match[1] || "").trim() : "Standard";
-    };
-
-    const extractBundleLabels = (lead) => {
-        const { assets, routingContext } = extractLeadMetadata(lead);
-        const fromMetadata = [];
-        if (Array.isArray(routingContext.bundleLines)) {
-            fromMetadata.push(...routingContext.bundleLines);
-        }
-        if (Array.isArray(assets.bundleSelections)) {
-            fromMetadata.push(...assets.bundleSelections);
-        }
-
-        let rawValues = fromMetadata;
-        if (rawValues.length === 0) {
-            const raw = String(lead && lead.risk_details || "");
-            const bundleValue = extractRiskSegment(raw, "Bundle");
-            rawValues = bundleValue ? bundleValue.split(",") : [];
-        }
-
-        const deduped = Array.from(new Set(rawValues.map((value) => normalizeBundleLabel(value)).filter(Boolean)));
-        return deduped;
-    };
-
-    const extractAssetData = (lead) => {
-        const { assets } = extractLeadMetadata(lead);
-        const raw = String(lead && lead.risk_details || "").trim();
-
-        return {
-            auto: (assets.auto && typeof assets.auto === "object") ? assets.auto : parseJsonSegment(extractRiskSegment(raw, "Auto")),
-            home: (assets.home && typeof assets.home === "object") ? assets.home : parseJsonSegment(extractRiskSegment(raw, "Home")),
-            business: (assets.business && typeof assets.business === "object") ? assets.business : parseJsonSegment(extractRiskSegment(raw, "Business"))
-        };
-    };
-
-    const formatBundleRequestLine = (lead) => {
-        const labels = extractBundleLabels(lead);
-        if (labels.length < 2) {
-            return "";
-        }
-        return `Bundle Request: ${labels.join(" + ")}`;
-    };
-
-    const renderCellLines = (lines, emptyLabel = "-") => {
-        const filtered = (Array.isArray(lines) ? lines : []).filter((line) => String(line || "").trim());
-        if (filtered.length === 0) {
-            return `<div class="text-slate-400">${escapeHtml(emptyLabel)}</div>`;
-        }
-
-        return filtered.map((line, index) => {
-            const className = index === 0 ? "" : "mt-1";
-            return className
-                ? `<div class="${className}">${escapeHtml(line)}</div>`
-                : `<div>${escapeHtml(line)}</div>`;
-        }).join("");
-    };
-
-    const formatAssetColumnHtml = (lead, type) => {
-        const assetData = extractAssetData(lead);
-        const bundleLine = formatBundleRequestLine(lead);
-        let assetLine = "";
-
-        if (type === "auto") {
-            assetLine = formatAutoRiskLine(assetData.auto);
-        } else if (type === "home") {
-            assetLine = formatHomeRiskLine(assetData.home);
-        } else if (type === "business") {
-            assetLine = formatBusinessRiskLine(assetData.business);
-        }
-
-        return renderCellLines([assetLine, assetLine && bundleLine ? bundleLine : ""]);
-    };
-
-    const formatRiskDetailsHtml = (lead) => {
-        const tierLine = `Tier: ${extractTierLabel(lead) || "Standard"}`;
-        const bundleLine = formatBundleRequestLine(lead);
-        return renderCellLines([tierLine, bundleLine]);
-    };
-
-    const normalizeLeadForDisplay = (lead) => {
-        if (!lead || typeof lead !== "object") {
-            return null;
-        }
-
-        return {
-            ...lead,
-            client_name: String(lead.client_name || "").trim(),
-            email: String(lead.email || "").trim().toLowerCase(),
-            phone: String(lead.phone || "").trim(),
-            insurance_line: String(lead.insurance_line || "general").trim().toLowerCase(),
-            risk_details: String(lead.risk_details || "").trim(),
-            status: normalizeStatusFilterValue(lead.status || "New")
-        };
-    };
-
-    const isLikelySameLead = (a, b) => {
-        if (!a || !b) {
-            return false;
-        }
-
-        if (String(a.id || "") && String(a.id || "") === String(b.id || "")) {
-            return true;
-        }
-
-        const identityA = `${String(a.email || "").toLowerCase()}|${String(a.phone || "").replace(/\D/g, "")}|${String(a.insurance_line || "").toLowerCase()}`;
-        const identityB = `${String(b.email || "").toLowerCase()}|${String(b.phone || "").replace(/\D/g, "")}|${String(b.insurance_line || "").toLowerCase()}`;
-        if (!identityA || identityA === "||") {
-            return false;
-        }
-        if (identityA !== identityB) {
-            return false;
-        }
-
-        const timeA = new Date(a.submission_date || a.created_at || 0).getTime();
-        const timeB = new Date(b.submission_date || b.created_at || 0).getTime();
-        if (!Number.isFinite(timeA) || !Number.isFinite(timeB)) {
-            return false;
-        }
-
-        return Math.abs(timeA - timeB) <= (1000 * 60 * 10);
-    };
-
-    const dedupeLeadsForDisplay = (rows) => {
-        const normalized = (Array.isArray(rows) ? rows : [])
-            .map((lead) => normalizeLeadForDisplay(lead))
-            .filter(Boolean)
-            .sort((a, b) => {
-                const aDate = new Date(a.submission_date || a.created_at || 0).getTime();
-                const bDate = new Date(b.submission_date || b.created_at || 0).getTime();
-                return bDate - aDate;
-            });
-
-        const result = [];
-        normalized.forEach((lead) => {
-            const existingIndex = result.findIndex((candidate) => isLikelySameLead(candidate, lead));
-            if (existingIndex < 0) {
-                result.push(lead);
-                return;
-            }
-
-            const existing = result[existingIndex];
-            const existingScore = [existing.client_name, existing.email, existing.phone, existing.risk_details].filter(Boolean).length;
-            const incomingScore = [lead.client_name, lead.email, lead.phone, lead.risk_details].filter(Boolean).length;
-            if (incomingScore >= existingScore) {
-                result[existingIndex] = lead;
-            }
-        });
-
-        return result;
-    };
-
     const renderLeads = () => {
         if (!leadsBody) {
             return;
         }
 
         if (state.leads.length === 0) {
-            leadsBody.innerHTML = "<tr><td class=\"px-4 py-5 text-sm text-slate-500\" colspan=\"10\">No leads found for the selected filters.</td></tr>";
+            leadsBody.innerHTML = "<tr><td class=\"px-4 py-5 text-sm text-slate-500\" colspan=\"7\">No leads found for the selected filters.</td></tr>";
             return;
         }
 
         leadsBody.innerHTML = state.leads
             .map((lead) => {
-                const routing = getLeadRoutingContext(lead);
-                const lineLabel = formatLineLabel(lead.insurance_line);
-                const source = routing.sourceChannel
-                    ? `<span class="mt-1 block text-xs text-slate-500">Source: ${escapeHtml(routing.sourceChannel)}</span>`
-                    : "";
-                const zipCode = extractZipCode(lead);
                 return `
                     <tr>
                         <td class="px-4 py-3 align-top text-slate-700">${escapeHtml(formatDate(lead.submission_date || lead.created_at))}</td>
@@ -994,13 +653,9 @@ document.addEventListener("DOMContentLoaded", () => {
                         <td class="px-4 py-3 align-top">
                             <div class="text-slate-700">${escapeHtml(lead.phone)}</div>
                             <div class="text-slate-500">${escapeHtml(lead.email)}</div>
-                            ${zipCode ? `<div class="text-slate-500">${escapeHtml(`AZ ZIP: ${zipCode}`)}</div>` : ""}
                         </td>
-                        <td class="px-4 py-3 align-top text-slate-700">${escapeHtml(lineLabel)}${source}</td>
-                        <td class="px-4 py-3 align-top text-sm leading-6 text-slate-700 max-w-xs">${formatAssetColumnHtml(lead, "auto")}</td>
-                        <td class="px-4 py-3 align-top text-sm leading-6 text-slate-700 max-w-xs">${formatAssetColumnHtml(lead, "home")}</td>
-                        <td class="px-4 py-3 align-top text-sm leading-6 text-slate-700 max-w-xs">${formatAssetColumnHtml(lead, "business")}</td>
-                        <td class="px-4 py-3 align-top text-sm leading-6 text-slate-700 max-w-xs">${formatRiskDetailsHtml(lead)}</td>
+                        <td class="px-4 py-3 align-top text-slate-700">${escapeHtml(lead.insurance_line)}</td>
+                        <td class="px-4 py-3 align-top text-slate-700 max-w-xs">${escapeHtml(lead.risk_details)}</td>
                         <td class="px-4 py-3 align-top">
                             <select data-lead-status="${lead.id}" class="rounded-lg border border-slate-300 px-2 py-1 text-xs font-semibold">
                                 <option value="New" ${lead.status === "New" ? "selected" : ""}>New</option>
@@ -1025,23 +680,12 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        try {
-            const query = leadSearch.value;
-            const status = normalizeStatusFilterValue(leadStatusFilter.value);
-            const rows = await backend.listLeads(query, status);
-            state.leads = dedupeLeadsForDisplay(rows);
-            renderLeads();
-            const leadCounts = countLeadLines(state.leads);
-            applyLeadFlowCounters(leadCounts.auto, leadCounts.property, leadCounts.commercial);
-            if (leadsStatus) {
-                leadsStatus.classList.add("hidden");
-            }
-        } catch (error) {
-            state.leads = [];
-            renderLeads();
-            if (leadsStatus) {
-                setStatus(leadsStatus, error.message || "Lead loading failed. Check backend connection and lead table schema.", "error");
-            }
+        const query = leadSearch.value;
+        const status = leadStatusFilter.value;
+        state.leads = await backend.listLeads(query, status);
+        renderLeads();
+        if (leadsStatus) {
+            leadsStatus.classList.add("hidden");
         }
     };
 
@@ -1052,7 +696,7 @@ document.addEventListener("DOMContentLoaded", () => {
             lead.client_name,
             lead.email,
             lead.phone,
-            formatLineLabel(lead.insurance_line),
+            lead.insurance_line,
             lead.risk_details,
             lead.status
         ]);
@@ -1602,7 +1246,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
-            await backend.updateLeadStatus(leadId, target.value);
+            await backend.updateLeadStatus(Number(leadId), target.value);
             await loadLeads();
         });
 

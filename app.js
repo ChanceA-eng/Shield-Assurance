@@ -2,8 +2,7 @@ const SHIELD_STORAGE_KEYS = {
     siteContent: "shield-site-content",
     analytics: "shield-site-analytics",
     visitorDate: "shield-last-visitor-date",
-    visitorGeo: "shield-visitor-geo",
-    quoteSource: "shield-quote-source"
+    visitorGeo: "shield-visitor-geo"
 };
 
 const SHIELD_DEFAULT_CONTENT = {
@@ -372,9 +371,6 @@ const upsertIncompleteForm = (entry) => {
         lastField: String(entry.lastField || "").trim(),
         completionPercent: Number(entry.completionPercent || 0),
         intakeRoute: normalizeInsuranceLine(entry.intakeRoute),
-        sourceChannel: String(entry.sourceChannel || "").trim(),
-        bundleRequested: Boolean(entry.bundleRequested),
-        bundleLines: Array.isArray(entry.bundleLines) ? entry.bundleLines.map((line) => normalizeInsuranceLine(line)).filter(Boolean) : [],
         status: "abandoned"
     };
 
@@ -881,16 +877,7 @@ const initializeAnalytics = () => {
 
     document.querySelectorAll("[data-analytics-quote]").forEach((node) => {
         node.addEventListener("click", () => {
-            const label = node.getAttribute("data-analytics-quote") || node.textContent.trim();
-            const sourcePayload = {
-                label,
-                path: window.location.pathname || "/",
-                savedAt: new Date().toISOString()
-            };
-            try {
-                sessionStorage.setItem(SHIELD_STORAGE_KEYS.quoteSource, JSON.stringify(sourcePayload));
-            } catch (_) {}
-            trackAnalyticsEvent("quote_click", label);
+            trackAnalyticsEvent("quote_click", node.getAttribute("data-analytics-quote") || node.textContent.trim());
         });
     });
 
@@ -908,9 +895,7 @@ window.ShieldSite = {
     saveAnalytics,
     resetAnalytics,
     createPlaceholderImage,
-    trackAnalyticsEvent,
-    upsertIncompleteForm,
-    markFormCompleted
+    trackAnalyticsEvent
 };
 
 document.addEventListener("DOMContentLoaded", () => {

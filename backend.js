@@ -76,6 +76,8 @@
         );
     };
 
+    const CRM_ENDPOINT = "https://shield-assurance-crm-api.vercel.app/api/leads";
+
     const postWebhook = async (url, payload) => {
         const endpoint = safeUrl(url);
         if (!endpoint) {
@@ -90,6 +92,66 @@
             });
         } catch (error) {
             console.warn("Webhook dispatch failed.", error);
+        }
+    };
+
+    const splitName = (fullName) => {
+        const clean = String(fullName || "").trim();
+        if (!clean) {
+            return { firstName: "", lastName: "" };
+        }
+
+        const parts = clean.split(/\s+/).filter(Boolean);
+        return {
+            firstName: parts[0] || "",
+            lastName: parts.slice(1).join(" ")
+        };
+    };
+
+    const postToCrm = async (lead, payload) => {
+        const meta = payload.metadata && typeof payload.metadata === "object" ? payload.metadata : {};
+        const routing = meta.routingContext && typeof meta.routingContext === "object" ? meta.routingContext : {};
+        const assets = meta.assets && typeof meta.assets === "object" ? meta.assets : {};
+        const guide = meta.guide && typeof meta.guide === "object" ? meta.guide : {};
+        const nameParts = splitName(payload.client_name);
+        const selectedLine = String(routing.selectedLine || guide.category || payload.insurance_line || "").trim().toLowerCase();
+        const sourceValue = meta.crmSource || routing.sourceChannel || payload.source_page || "website-contact-form";
+        const crmPayload = {
+            full_name: payload.client_name,
+            fullName: payload.client_name,
+            name: payload.client_name,
+            first_name: nameParts.firstName,
+            last_name: nameParts.lastName,
+            email: payload.email,
+            phone: payload.phone,
+            zip: String(meta.zip || routing.zip || assets.zip || "").trim(),
+            state: String(meta.state || routing.state || assets.state || "AZ").trim() || "AZ",
+            line: payload.insurance_line,
+            line_of_business: payload.insurance_line,
+            primaryCoverage: selectedLine,
+            business: String(meta.business || routing.business || assets.business || "").trim(),
+            vin: String(meta.vin || routing.vin || assets.vin || "").trim(),
+            year: String(meta.year || routing.year || assets.year || "").trim(),
+            make: String(meta.make || routing.make || assets.make || "").trim(),
+            model: String(meta.model || routing.model || assets.model || "").trim(),
+            requirements: payload.risk_details,
+            message: payload.risk_details,
+            source: sourceValue,
+            src: sourceValue,
+            from: payload.source_page,
+            utm_source: String(meta.utm_source || routing.utm_source || "").trim(),
+            insurance_line: payload.insurance_line,
+            details: payload.risk_details
+        };
+
+        try {
+            await fetch(CRM_ENDPOINT, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(crmPayload)
+            });
+        } catch (error) {
+            console.warn("CRM direct post failed.", error);
         }
     };
 
@@ -717,6 +779,9 @@
             source_page: String(lead.sourcePage || window.location.pathname || "contact"),
             metadata: enrichedMetadata
         };
+
+        // Always attempt direct CRM post — fires regardless of Supabase config.
+        await postToCrm(lead, payload);
 
         if (!client) {
             return enqueueLocalLead(payload, "Supabase is not configured.");
