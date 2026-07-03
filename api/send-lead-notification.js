@@ -4,6 +4,9 @@ export default async function handler(req, res) {
   }
 
   const apiKey = process.env.SENDGRID_API_KEY;
+  const fromEmail = process.env.SENDGRID_FROM_EMAIL || "camani@shield-assurance.com";
+  const fromName = process.env.SENDGRID_FROM_NAME || "Shield Assurance";
+  const toEmail = process.env.SENDGRID_TO_EMAIL || "camani@shield-assurance.com";
   if (!apiKey) {
     return res.status(500).json({ error: "Server misconfiguration: missing SENDGRID_API_KEY" });
   }
@@ -19,11 +22,11 @@ export default async function handler(req, res) {
   const msg = {
     personalizations: [
       {
-        to: [{ email: "camani@shield-assurance.com" }],
+        to: [{ email: toEmail }],
         subject: `New Lead Captured: ${fullName} (${primaryLabel})`
       }
     ],
-    from: { email: "alerts@shield-assurance.com" },
+    from: { email: fromEmail, name: fromName },
     content: [
       {
         type: "text/plain",
