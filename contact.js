@@ -62,9 +62,13 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    const setStatus = (message, tone) => {
+    const setStatus = (message, tone, allowHtml) => {
         status.classList.remove("hidden", "text-emerald-300", "text-amber-300", "text-rose-300");
         status.classList.add(tone);
+        if (allowHtml) {
+            status.innerHTML = message;
+            return;
+        }
         status.textContent = message;
     };
 
@@ -95,6 +99,28 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
         return true;
+    };
+
+    const sendLeadNotification = async () => {
+        try {
+            const summary = (messageField?.value || "").trim() || "No additional details provided.";
+            await fetch("/api/send-lead-notification", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    fullName: form.querySelector("#full-name")?.value || "",
+                    primaryLabel: coverageSelect?.value || "General Inquiry",
+                    azZip: form.querySelector("#zip-code")?.value || "",
+                    phone: form.querySelector("#phone")?.value || "",
+                    email: form.querySelector("#email")?.value || "",
+                    summary: summary,
+                    riskDetails: summary,
+                    insuranceLine: coverageSelect?.value || "general"
+                })
+            });
+        } catch (_) {
+            // Do not block the user-facing submission flow if email fails.
+        }
     };
 
     form.addEventListener("submit", async (event) => {
@@ -132,8 +158,14 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             }
 
+            await sendLeadNotification();
+
             form.reset();
-            setStatus("Consultation request sent. A Shield Assurance advisor will reach out shortly.", "text-emerald-300");
+            setStatus(
+                "Request received. To save time, you can <a href=\"/schedule/\" class=\"underline font-semibold text-white\">book an appointment now</a>.",
+                "text-emerald-300",
+                true
+            );
         } catch (error) {
             setStatus(`Submission did not complete. Please call ${fallbackPhone} and we will assist immediately.`, "text-rose-300");
         } finally {

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Book an Appointment | Shield Assurance</title>
+    <meta name="description" content="Book a 30-minute appointment with Shield Assurance after submitting your request.">
+    <meta name="robots" content="noindex,follow">
+    <link rel="canonical" href="https://www.shield-assurance.com/schedule/">
+
+    <link rel="manifest" href="../manifest.webmanifest">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = { theme: { extend: { colors: { shieldNavy: "#0b1323", shieldBlue: "#0ea5e9" } } } };
+    </script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="../styles.css">
+</head>
+<body class="antialiased bg-slate-100 text-slate-900">
+    <header class="border-b border-slate-200 bg-white/90 backdrop-blur">
+        <nav class="mx-auto flex max-w-7xl items-center justify-between px-6 py-3 lg:px-8">
+            <a href="/" class="flex items-center gap-3">
+                <span class="grid h-10 w-10 place-content-center rounded-xl bg-shieldNavy text-white"><i data-lucide="shield-check" class="h-5 w-5"></i></span>
+                <span class="display-font text-lg font-extrabold">Shield Assurance <span class="text-shieldBlue">LLC</span></span>
+            </a>
+            <a href="/contact" class="text-sm font-semibold text-slate-700 hover:text-shieldBlue">Back to Contact</a>
+        </nav>
+    </header>
+
+    <main class="mx-auto max-w-6xl px-6 py-12 lg:px-8">
+        <section class="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
+            <p class="text-xs font-bold uppercase tracking-[0.3em] text-sky-600">Next Step</p>
+            <h1 class="display-font mt-3 text-3xl font-extrabold md:text-4xl">Save time and book your appointment now</h1>
+            <p class="mt-4 max-w-3xl text-slate-600">We received your information. Choose a convenient 30-minute time below, and we will be ready to review your coverage goals.</p>
+        </section>
+
+        <section class="mt-8 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm md:p-6">
+            <!-- Calendly inline widget begin -->
+            <div class="calendly-inline-widget" data-url="https://calendly.com/camani-shield-assurance/30min?hide_event_type_details=1" style="min-width:320px;height:700px;"></div>
+            <script type="text/javascript" src="https://assets.calendly.com/assets/external/widget.js" async></script>
+            <!-- Calendly inline widget end -->
+        </section>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../supabase-config.js?v=20260604-2"></script>
+    <script src="../backend.js?v=20260604-2"></script>
+    <script src="../app.js?v=20260606-1"></script>
+</body>
+</html>
