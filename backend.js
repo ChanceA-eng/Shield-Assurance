@@ -79,6 +79,29 @@
     const CRM_ENDPOINT = "https://shield-assurance-crm-api.vercel.app/api/leads";
     const LEAD_API_ENDPOINT = "/api/leads/create";
 
+    const getApiEndpoint = (path) => {
+        const cleanPath = String(path || "").trim();
+        if (!cleanPath) {
+            return cleanPath;
+        }
+
+        if (/^https?:\/\//i.test(cleanPath)) {
+            return cleanPath;
+        }
+
+        const configuredOrigin = safeUrl(window.SHIELD_API_ORIGIN || "");
+        if (configuredOrigin) {
+            return configuredOrigin.replace(/\/$/, "") + cleanPath;
+        }
+
+        const host = String(window.location && window.location.hostname || "").toLowerCase();
+        if (host === "127.0.0.1" || host === "localhost") {
+            return "https://www.shield-assurance.com" + cleanPath;
+        }
+
+        return cleanPath;
+    };
+
     const postWebhook = async (url, payload) => {
         const endpoint = safeUrl(url);
         if (!endpoint) {
@@ -162,7 +185,7 @@
 
         let response;
         try {
-            response = await fetch(LEAD_API_ENDPOINT, {
+            response = await fetch(getApiEndpoint(LEAD_API_ENDPOINT), {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(payload),

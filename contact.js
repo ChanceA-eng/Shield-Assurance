@@ -72,6 +72,29 @@ document.addEventListener("DOMContentLoaded", () => {
         status.textContent = message;
     };
 
+    const getApiUrl = (path) => {
+        const cleanPath = String(path || "").trim();
+        if (!cleanPath) {
+            return cleanPath;
+        }
+
+        if (/^https?:\/\//i.test(cleanPath)) {
+            return cleanPath;
+        }
+
+        const configuredOrigin = String(window.SHIELD_API_ORIGIN || "").trim();
+        if (/^https?:\/\//i.test(configuredOrigin)) {
+            return configuredOrigin.replace(/\/$/, "") + cleanPath;
+        }
+
+        const host = String(window.location?.hostname || "").toLowerCase();
+        if (host === "127.0.0.1" || host === "localhost") {
+            return "https://www.shield-assurance.com" + cleanPath;
+        }
+
+        return cleanPath;
+    };
+
     const encodeFormData = (data) => {
         return Object.keys(data)
             .map((key) => encodeURIComponent(key) + "=" + encodeURIComponent(data[key]))
@@ -103,7 +126,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const sendLeadNotification = async () => {
         const summary = (messageField?.value || "").trim() || "No additional details provided.";
-        const response = await fetch("/api/send-lead-notification", {
+        const response = await fetch(getApiUrl("/api/send-lead-notification"), {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({

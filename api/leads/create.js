@@ -1,6 +1,21 @@
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PHONE_DIGIT_PATTERN = /\d/g;
 const ALLOWED_AI_STATUSES = new Set(["pending", "processing", "complete", "failed", "not_requested"]);
+const ALLOWED_ORIGINS = new Set([
+  "https://www.shield-assurance.com",
+  "https://shield-assurance.com",
+  "http://127.0.0.1:8000",
+  "http://localhost:8000"
+]);
+
+const applyCorsHeaders = (req, res) => {
+  const origin = String((req && req.headers && req.headers.origin) || "").trim();
+  const allowOrigin = ALLOWED_ORIGINS.has(origin) ? origin : "https://www.shield-assurance.com";
+  res.setHeader("Access-Control-Allow-Origin", allowOrigin);
+  res.setHeader("Vary", "Origin");
+  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, x-api-key");
+};
 
 const readJsonBody = (req) => {
   if (!req || req.body == null) {
@@ -189,6 +204,12 @@ const triggerEnrichment = async (supabaseUrl, serviceKey, lead) => {
 };
 
 export default async function handler(req, res) {
+  applyCorsHeaders(req, res);
+
+  if (req.method === "OPTIONS") {
+    return res.status(204).end();
+  }
+
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
