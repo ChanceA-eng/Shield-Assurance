@@ -600,8 +600,24 @@
             window.location.href = "/";
           }
 
-          function goToPreviousStep() {
-            var activeStep = state.lastStep || "quote-step-1";
+          function goToPreviousStep(event) {
+            if (event && typeof event.preventDefault === "function") {
+              event.preventDefault();
+            }
+
+            var activeStep = "";
+            stepIds.forEach(function (id) {
+              var el = document.getElementById(id);
+              if (!el) return;
+              if (!el.classList.contains("hidden") && el.classList.contains("is-active")) {
+                activeStep = id;
+              }
+            });
+
+            if (!activeStep) {
+              activeStep = state.lastStep || "quote-step-1";
+            }
+
             var currentIndex = stepIds.indexOf(activeStep);
             if (currentIndex > 0) {
               setStep(stepIds[currentIndex - 1]);
