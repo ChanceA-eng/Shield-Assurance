@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
@@ -155,7 +155,7 @@
       })(window, document);
     </script>
   </head>
-<body class="antialiased">
+<body class="antialiased site-modern">
     <header id="site-header" class="fixed inset-x-0 top-0 z-50 bg-white/85 backdrop-blur-md border-b border-slate-200/70">
         <nav class="mx-auto flex max-w-7xl items-center justify-between px-6 py-3 lg:px-8">
             <a href="/" class="flex items-center gap-3"><span class="grid h-10 w-10 place-content-center rounded-xl bg-shieldNavy text-white"><i data-lucide="shield-check" class="h-5 w-5"></i></span><span class="display-font text-lg font-extrabold">Shield Assurance <span class="text-shieldBlue">LLC</span></span></a>
@@ -180,6 +180,48 @@
               <div class="mb-4 flex justify-end">
                 <button type="button" id="quote-exit-btn" class="intake-ghost-btn">Exit</button>
               </div>
+              <div id="resume-banner" class="quote-resume-banner mb-5 hidden" role="status" aria-live="polite"></div>
+
+              <section class="quote-progress-shell mb-6" aria-label="Quote progress status">
+                <div class="flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <p class="quote-progress-kicker">Quote Progress</p>
+                    <h3 class="quote-progress-title">Your progress so far</h3>
+                  </div>
+                  <p id="optimization-score" class="quote-progress-score">0% Complete</p>
+                </div>
+
+                <div class="quote-progress-track" aria-hidden="true">
+                  <div id="optimization-bar" class="quote-progress-fill" style="width: 0%;"></div>
+                </div>
+
+                <p id="progress-microcopy" class="quote-progress-microcopy">Start by choosing your coverage type.</p>
+
+                <div class="quote-milestones" id="milestone-tracker">
+                  <div class="quote-milestone" data-ms="identity">
+                    <span class="quote-ms-dot" aria-hidden="true"></span>
+                    <div>
+                      <p class="quote-ms-label">Contact info saved</p>
+                      <p class="quote-ms-sub">Name, phone, and email</p>
+                    </div>
+                  </div>
+                  <div class="quote-milestone" data-ms="risk">
+                    <span class="quote-ms-dot" aria-hidden="true"></span>
+                    <div>
+                      <p class="quote-ms-label">Coverage details added</p>
+                      <p class="quote-ms-sub">Property or vehicle info</p>
+                    </div>
+                  </div>
+                  <div class="quote-milestone" data-ms="ready">
+                    <span class="quote-ms-dot" aria-hidden="true"></span>
+                    <div>
+                      <p class="quote-ms-label">Ready to submit</p>
+                      <p class="quote-ms-sub">Review and send</p>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
               <div id="quote-step-1" class="intake-screen is-active">
                 <h2 id="step-one-question" class="display-font text-3xl font-extrabold text-slate-900">Enter your asset details.</h2>
 
@@ -207,10 +249,12 @@
 
                 <div id="home-step-content" class="mt-8 hidden space-y-3">
                   <input id="home-address" type="text" placeholder="Enter your property address..." class="intake-input">
+                  <p id="home-address-success" class="field-success hidden">Your address is saved.</p>
                 </div>
 
                 <div id="business-step-content" class="mt-8 hidden space-y-3">
                   <input id="business-industry" type="text" placeholder="What industry is your business in?" class="intake-input">
+                  <p id="business-industry-success" class="field-success hidden">Your business type is saved.</p>
                 </div>
 
                 <p id="step-one-error" class="mt-4 hidden text-sm font-semibold text-rose-600"></p>
@@ -242,6 +286,7 @@
                 <h2 class="display-font text-3xl font-extrabold text-slate-900">What is your full name?</h2>
                 <div class="step-body-zone">
                 <input id="route-name" type="text" placeholder="Full Name" class="mt-8 intake-input">
+                <p id="route-name-success" class="field-success hidden">Your name is saved.</p>
                 <p id="step-3-error" class="mt-4 hidden text-sm font-semibold text-rose-600"></p>
                 </div>
                 <div class="step-action-row mt-8">
@@ -254,6 +299,7 @@
                 <h2 class="display-font text-3xl font-extrabold text-slate-900">What is your Arizona ZIP Code?</h2>
                 <div class="step-body-zone">
                 <input id="route-zip" type="text" inputmode="numeric" maxlength="5" placeholder="Arizona ZIP Code" class="mt-8 intake-input">
+                <p id="route-zip-success" class="field-success hidden">Your ZIP code is saved.</p>
                 <p id="step-4-error" class="mt-4 hidden text-sm font-semibold text-rose-600"></p>
                 </div>
                 <div class="step-action-row mt-8">
@@ -266,6 +312,7 @@
                 <h2 class="display-font text-3xl font-extrabold text-slate-900">What is your best phone number?</h2>
                 <div class="step-body-zone">
                 <input id="route-phone" type="tel" placeholder="Phone Number" class="mt-8 intake-input">
+                <p id="route-phone-success" class="field-success hidden">Your phone number is saved.</p>
                 <p id="step-5-error" class="mt-4 hidden text-sm font-semibold text-rose-600"></p>
                 </div>
                 <div class="step-action-row mt-8">
@@ -278,6 +325,7 @@
                 <h2 class="display-font text-3xl font-extrabold text-slate-900">What is your email address?</h2>
                 <div class="step-body-zone">
                 <input id="route-email" type="email" placeholder="Email Address" class="mt-8 intake-input">
+                <p id="route-email-success" class="field-success hidden">Your email is saved.</p>
                 <p id="step-6-error" class="mt-4 hidden text-sm font-semibold text-rose-600"></p>
                 </div>
                 <div class="step-action-row mt-8">
@@ -372,13 +420,122 @@
             bundle: [],
             route: { fullName: "", zip: "", phone: "", email: "" },
             lastField: "",
+            lastStep: "quote-step-1",
             touched: false,
             submitted: false
           };
 
+          var quoteDraftKey = "shield_quote_draft";
+          var quoteDraftTtlMs = 1000 * 60 * 60 * 24 * 2;
+          var draftSaveTimer = null;
+
+          function loadQuoteDraft() {
+            try {
+              var raw = localStorage.getItem(quoteDraftKey);
+              if (!raw) return null;
+              var parsed = JSON.parse(raw);
+              if (!parsed || typeof parsed !== "object") return null;
+              if (!parsed.ts || Date.now() - Number(parsed.ts) > quoteDraftTtlMs) {
+                localStorage.removeItem(quoteDraftKey);
+                return null;
+              }
+              return parsed;
+            } catch (_) {
+              return null;
+            }
+          }
+
+          function buildDraftPayload() {
+            var activeStep = state.lastStep || "quote-step-1";
+            stepIds.forEach(function (id) {
+              var el = document.getElementById(id);
+              if (el && !el.classList.contains("hidden") && el.classList.contains("is-active")) activeStep = id;
+            });
+
+            return {
+              ts: Date.now(),
+              category: state.category,
+              guideLabel: state.guideLabel,
+              guideTier: state.guideTier,
+              guideSummary: state.guideSummary,
+              guideMessage: state.guideMessage,
+              entryType: state.entryType,
+              sourceChannel: state.sourceChannel,
+              autoMode: state.autoMode,
+              auto: { vin: state.auto.vin, year: state.auto.year, make: state.auto.make, model: state.auto.model, verified: state.auto.verified },
+              home: { address: state.home.address },
+              business: { industry: state.business.industry },
+              bundle: Array.isArray(state.bundle) ? state.bundle.slice() : [],
+              route: {
+                fullName: state.route.fullName,
+                zip: state.route.zip,
+                phone: state.route.phone,
+                email: state.route.email
+              },
+              lastField: state.lastField,
+              lastStep: activeStep,
+              touched: state.touched
+            };
+          }
+
+          function saveQuoteDraft() {
+            if (state.submitted || !hasQuoteProgress()) return;
+            try {
+              localStorage.setItem(quoteDraftKey, JSON.stringify(buildDraftPayload()));
+            } catch (_) {}
+          }
+
+          function queueQuoteDraftSave() {
+            if (state.submitted) return;
+            if (draftSaveTimer) clearTimeout(draftSaveTimer);
+            draftSaveTimer = setTimeout(saveQuoteDraft, 500);
+          }
+
+          function clearQuoteDraft() {
+            try {
+              localStorage.removeItem(quoteDraftKey);
+            } catch (_) {}
+          }
+
+          var restoredDraft = loadQuoteDraft();
+          if (restoredDraft) {
+            if (!state.category && restoredDraft.category) state.category = normalizeCategory(restoredDraft.category);
+            if (restoredDraft.guideLabel) state.guideLabel = restoredDraft.guideLabel;
+            if (restoredDraft.guideTier) state.guideTier = restoredDraft.guideTier;
+            if (restoredDraft.guideSummary) state.guideSummary = restoredDraft.guideSummary;
+            if (restoredDraft.guideMessage) state.guideMessage = restoredDraft.guideMessage;
+            if (restoredDraft.entryType) state.entryType = restoredDraft.entryType;
+            if (restoredDraft.sourceChannel) state.sourceChannel = restoredDraft.sourceChannel;
+            if (restoredDraft.autoMode) state.autoMode = restoredDraft.autoMode;
+            if (restoredDraft.auto && typeof restoredDraft.auto === "object") {
+              state.auto.vin = restoredDraft.auto.vin || "";
+              state.auto.year = restoredDraft.auto.year || "";
+              state.auto.make = restoredDraft.auto.make || "";
+              state.auto.model = restoredDraft.auto.model || "";
+              state.auto.verified = Boolean(restoredDraft.auto.verified);
+            }
+            if (restoredDraft.home && typeof restoredDraft.home === "object") state.home.address = restoredDraft.home.address || "";
+            if (restoredDraft.business && typeof restoredDraft.business === "object") state.business.industry = restoredDraft.business.industry || "";
+            if (Array.isArray(restoredDraft.bundle)) {
+              state.bundle = restoredDraft.bundle.filter(function (line) { return ["auto", "home", "business"].indexOf(line) !== -1; });
+            }
+            if (restoredDraft.route && typeof restoredDraft.route === "object") {
+              state.route.fullName = restoredDraft.route.fullName || "";
+              state.route.zip = restoredDraft.route.zip || "";
+              state.route.phone = restoredDraft.route.phone || "";
+              state.route.email = restoredDraft.route.email || "";
+            }
+            if (restoredDraft.lastField) state.lastField = restoredDraft.lastField;
+            if (restoredDraft.lastStep && /^quote-step-[1-7]$/.test(restoredDraft.lastStep)) state.lastStep = restoredDraft.lastStep;
+            state.touched = Boolean(restoredDraft.touched || state.autoMode || state.auto.vin || state.auto.year || state.home.address || state.business.industry || state.route.fullName || state.route.zip || state.route.phone || state.route.email);
+          }
+
           function markTouched(fieldName) {
             state.touched = true;
             if (fieldName) state.lastField = fieldName;
+            updateInlineSuccessStates();
+            updateProgressPanel();
+            queueQuoteDraftSave();
           }
 
           function hasQuoteProgress() {
@@ -437,16 +594,30 @@
 
           function leaveFlowToHome() {
             if (!state.submitted && hasQuoteProgress()) {
-              var ok = window.confirm("Leaving this page will discard your quote progress. Do you want to continue?");
-              if (!ok) return;
+              saveQuoteDraft();
+              captureIncompleteQuote();
             }
             window.location.href = "/";
+          }
+
+          function goToPreviousStep() {
+            var activeStep = state.lastStep || "quote-step-1";
+            var currentIndex = stepIds.indexOf(activeStep);
+            if (currentIndex > 0) {
+              setStep(stepIds[currentIndex - 1]);
+              return;
+            }
+            if (!state.submitted && hasQuoteProgress()) {
+              saveQuoteDraft();
+              captureIncompleteQuote();
+            }
+            window.location.href = "/#coverage-factor-guide";
           }
 
           var exitBtn = document.getElementById("quote-exit-btn");
           if (exitBtn) exitBtn.addEventListener("click", leaveFlowToHome);
           var step1BackBtn = document.getElementById("step-1-back");
-          if (step1BackBtn) step1BackBtn.addEventListener("click", leaveFlowToHome);
+          if (step1BackBtn) step1BackBtn.addEventListener("click", goToPreviousStep);
 
           var makeModelMap = {
             Acura: ["ILX", "Integra", "TLX", "RDX", "MDX", "ZDX"],
@@ -480,6 +651,78 @@
 
           var stepIds = ["quote-step-1", "quote-step-2", "quote-step-3", "quote-step-4", "quote-step-5", "quote-step-6", "quote-step-7"];
 
+          var optimizationBar = document.getElementById("optimization-bar");
+          var optimizationScore = document.getElementById("optimization-score");
+          var progressMicrocopy = document.getElementById("progress-microcopy");
+          var milestoneTracker = document.getElementById("milestone-tracker");
+          var resumeBanner = document.getElementById("resume-banner");
+
+          function getProgressMicrocopy(score) {
+            if (!state.category) return "Choose your coverage type to get started.";
+            if (score < 35) return "Good start. Add a few more details to keep going.";
+            if (score < 70) return "Nice, you’re making progress. A few more fields to go.";
+            if (score < 100) return "Almost there. Finish the last details to review your quote.";
+            return "You’re ready to review your quote.";
+          }
+
+          function updateMilestones() {
+            if (!milestoneTracker) return;
+            var identityDone = Boolean(state.route.fullName && state.route.email);
+            var riskDone = Boolean(state.category) && (
+              (state.category === "auto" && ((state.autoMode === "vin" && state.auto.vin.length === 17) || (state.autoMode === "manual" && state.auto.year && state.auto.make && state.auto.model)))
+              || (state.category === "home" && state.home.address)
+              || (state.category === "business" && state.business.industry)
+            );
+            var readyDone = Boolean(state.route.zip && validateAZZip(state.route.zip) && normalizePhone(state.route.phone).length >= 10 && validateEmail(state.route.email));
+            var map = { identity: identityDone, risk: riskDone, ready: readyDone };
+
+            milestoneTracker.querySelectorAll(".quote-milestone").forEach(function (item) {
+              var key = item.getAttribute("data-ms") || "";
+              item.classList.toggle("is-done", Boolean(map[key]));
+            });
+          }
+
+          function updateProgressPanel() {
+            var score = getCompletionPercent();
+            if (optimizationBar) optimizationBar.style.width = score + "%";
+            if (optimizationScore) optimizationScore.textContent = score + "% Complete";
+            if (progressMicrocopy) progressMicrocopy.textContent = getProgressMicrocopy(score);
+            updateMilestones();
+          }
+
+          function toggleFieldSuccess(inputId, successId, isValid) {
+            var input = document.getElementById(inputId);
+            var msg = document.getElementById(successId);
+            if (input) input.classList.toggle("is-verified", Boolean(isValid));
+            if (msg) msg.classList.toggle("hidden", !isValid);
+          }
+
+          function updateInlineSuccessStates() {
+            toggleFieldSuccess("home-address", "home-address-success", Boolean(state.home.address));
+            toggleFieldSuccess("business-industry", "business-industry-success", Boolean(state.business.industry));
+            toggleFieldSuccess("route-name", "route-name-success", Boolean(state.route.fullName));
+            toggleFieldSuccess("route-zip", "route-zip-success", Boolean(state.route.zip && validateAZZip(state.route.zip)));
+            toggleFieldSuccess("route-phone", "route-phone-success", Boolean(normalizePhone(state.route.phone).length >= 10));
+            toggleFieldSuccess("route-email", "route-email-success", Boolean(state.route.email && validateEmail(state.route.email)));
+            var autoVin = document.getElementById("auto-vin");
+            if (autoVin) autoVin.classList.toggle("is-verified", Boolean(state.auto.verified));
+          }
+
+          function showResumeBanner() {
+            if (!resumeBanner || !restoredDraft) return;
+            var completed = [];
+            if (state.route.fullName || state.route.email || state.route.phone) completed.push("Contact Information");
+            if (state.category) completed.push("Coverage Selection");
+            if (state.category === "home" && state.home.address) completed.push("Property Verification");
+            if (state.category === "auto" && (state.auto.vin || state.auto.model)) completed.push("Vehicle Verification");
+            if (state.category === "business" && state.business.industry) completed.push("Business Classification");
+            var lastUpdated = new Date(Number(restoredDraft.ts || Date.now()));
+            var stamp = lastUpdated.toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" });
+            var completedText = completed.length ? completed.join(", ") : "Session initialized";
+            resumeBanner.innerHTML = "<strong>Welcome back:</strong> Your progress is back. Last updated " + stamp + ". Completed steps: " + completedText + ".";
+            resumeBanner.classList.remove("hidden");
+          }
+
           function setStep(targetId) {
             stepIds.forEach(function (id) {
               var el = document.getElementById(id);
@@ -487,7 +730,10 @@
               var active = id === targetId;
               el.classList.toggle("hidden", !active);
               el.classList.toggle("is-active", active);
+              if (active) state.lastStep = id;
             });
+            updateProgressPanel();
+            queueQuoteDraftSave();
           }
 
           function setChoiceGroup(buttons, selectedValue, attrName, activeClass) {
@@ -517,7 +763,7 @@
               else if (state.category === "home") stepOneQuestion.textContent = "Enter your property address.";
               else if (state.category === "business") stepOneQuestion.textContent = "What industry is your business in?";
               else if (state.entryType === "personal") stepOneQuestion.textContent = "Choose your personal coverage path.";
-              else stepOneQuestion.textContent = "Choose your primary coverage line.";
+              else stepOneQuestion.textContent = "What would you like to insure?";
             }
             ["auto", "home", "business"].forEach(function (key) {
               var panel = document.getElementById(key + "-step-content");
@@ -608,6 +854,8 @@
           if (makeSelect && modelSelect) {
             makeSelect.addEventListener("change", function () {
               var makeVal = makeSelect.value;
+              state.auto.make = makeVal;
+              state.auto.model = "";
               var models = makeModelMap[makeVal] || [];
               modelSelect.innerHTML = '<option value="">Model</option>';
               models.forEach(function (model) {
@@ -616,8 +864,40 @@
                 opt.textContent = model;
                 modelSelect.appendChild(opt);
               });
+              queueQuoteDraftSave();
             });
           }
+
+          var autoVinInput = document.getElementById("auto-vin");
+          if (autoVinInput && state.auto.vin) autoVinInput.value = state.auto.vin;
+          if (yearSelect && state.auto.year) yearSelect.value = state.auto.year;
+          if (makeSelect && state.auto.make) {
+            makeSelect.value = state.auto.make;
+            var restoredModels = makeModelMap[state.auto.make] || [];
+            if (modelSelect) {
+              modelSelect.innerHTML = '<option value="">Model</option>';
+              restoredModels.forEach(function (model) {
+                var opt = document.createElement("option");
+                opt.value = model;
+                opt.textContent = model;
+                modelSelect.appendChild(opt);
+              });
+            }
+          }
+          if (modelSelect && state.auto.model) modelSelect.value = state.auto.model;
+
+          var homeAddressInput = document.getElementById("home-address");
+          if (homeAddressInput && state.home.address) homeAddressInput.value = state.home.address;
+          var businessIndustryInput = document.getElementById("business-industry");
+          if (businessIndustryInput && state.business.industry) businessIndustryInput.value = state.business.industry;
+          var routeNameInput = document.getElementById("route-name");
+          if (routeNameInput && state.route.fullName) routeNameInput.value = state.route.fullName;
+          var routeZipInput = document.getElementById("route-zip");
+          if (routeZipInput && state.route.zip) routeZipInput.value = state.route.zip;
+          var routePhoneInput = document.getElementById("route-phone");
+          if (routePhoneInput && state.route.phone) routePhoneInput.value = state.route.phone;
+          var routeEmailInput = document.getElementById("route-email");
+          if (routeEmailInput && state.route.email) routeEmailInput.value = state.route.email;
 
           var autoModeButtons = Array.prototype.slice.call(document.querySelectorAll("[data-auto-mode]"));
           var vinField = document.getElementById("auto-vin-field");
@@ -631,6 +911,11 @@
               if (manualField) manualField.classList.toggle("hidden", state.autoMode !== "manual");
             });
           });
+          if (state.autoMode) {
+            setChoiceGroup(autoModeButtons, state.autoMode, "data-auto-mode", "is-selected-navy");
+            if (vinField) vinField.classList.toggle("hidden", state.autoMode !== "vin");
+            if (manualField) manualField.classList.toggle("hidden", state.autoMode !== "manual");
+          }
 
           var verifyVinBtn = document.getElementById("verify-vin-btn");
           if (verifyVinBtn) {
@@ -640,6 +925,8 @@
               if (!status) return;
               if (vin.length !== 17) {
                 state.auto.verified = false;
+                var vinInput = document.getElementById("auto-vin");
+                if (vinInput) vinInput.classList.remove("is-verified");
                 status.className = "text-sm font-semibold text-rose-600";
                 status.textContent = "Please enter all 17 VIN characters first.";
                 return;
@@ -650,14 +937,20 @@
               setTimeout(function () {
                 state.auto.verified = true;
                 verifyVinBtn.disabled = false;
+                var vinInput = document.getElementById("auto-vin");
+                if (vinInput) vinInput.classList.add("is-verified");
                 status.className = "text-sm font-semibold text-emerald-600";
                 status.textContent = "Vehicle details verified.";
+                updateProgressPanel();
+                updateInlineSuccessStates();
               }, 650);
             });
           }
 
           var bundleButtons = Array.prototype.slice.call(document.querySelectorAll(".bundle-choice"));
-          state.bundle = state.category ? [state.category] : [];
+          if (!Array.isArray(state.bundle) || state.bundle.length === 0) {
+            state.bundle = state.category ? [state.category] : [];
+          }
           function refreshBundleSelection() {
             bundleButtons.forEach(function (btn) {
               var key = btn.getAttribute("data-bundle") || "";
@@ -691,13 +984,39 @@
               var marker = field.id || field.name || "quote-field";
               field.addEventListener("input", function () {
                 var value = (field.value || "").toString().trim();
+                if (field.id === "auto-vin") state.auto.vin = value;
+                if (field.id === "auto-year") state.auto.year = value;
+                if (field.id === "auto-make") state.auto.make = value;
+                if (field.id === "auto-model") state.auto.model = value;
+                if (field.id === "home-address") state.home.address = value;
+                if (field.id === "business-industry") state.business.industry = value;
+                if (field.id === "route-name") state.route.fullName = value;
+                if (field.id === "route-zip") state.route.zip = value;
+                if (field.id === "route-phone") state.route.phone = value;
+                if (field.id === "route-email") state.route.email = value;
                 if (value) markTouched(marker);
                 state.lastField = marker;
+                updateInlineSuccessStates();
+                updateProgressPanel();
+                queueQuoteDraftSave();
               });
               field.addEventListener("change", function () {
                 var value = (field.value || "").toString().trim();
+                if (field.id === "auto-vin") state.auto.vin = value;
+                if (field.id === "auto-year") state.auto.year = value;
+                if (field.id === "auto-make") state.auto.make = value;
+                if (field.id === "auto-model") state.auto.model = value;
+                if (field.id === "home-address") state.home.address = value;
+                if (field.id === "business-industry") state.business.industry = value;
+                if (field.id === "route-name") state.route.fullName = value;
+                if (field.id === "route-zip") state.route.zip = value;
+                if (field.id === "route-phone") state.route.phone = value;
+                if (field.id === "route-email") state.route.email = value;
                 if (value) markTouched(marker);
                 state.lastField = marker;
+                updateInlineSuccessStates();
+                updateProgressPanel();
+                queueQuoteDraftSave();
               });
               field.addEventListener("focus", function () {
                 state.lastField = marker;
@@ -788,10 +1107,10 @@
             setStep("quote-step-2");
           });
 
-          document.getElementById("step-2-back").addEventListener("click", function () { setStep("quote-step-1"); });
+          document.getElementById("step-2-back").addEventListener("click", goToPreviousStep);
           document.getElementById("to-step-3").addEventListener("click", function () { setStep("quote-step-3"); });
 
-          document.getElementById("step-3-back").addEventListener("click", function () { setStep("quote-step-2"); });
+          document.getElementById("step-3-back").addEventListener("click", goToPreviousStep);
           document.getElementById("to-step-4").addEventListener("click", function () {
             state.route.fullName = (document.getElementById("route-name").value || "").trim();
             if (!state.route.fullName) {
@@ -802,7 +1121,7 @@
             setStep("quote-step-4");
           });
 
-          document.getElementById("step-4-back").addEventListener("click", function () { setStep("quote-step-3"); });
+          document.getElementById("step-4-back").addEventListener("click", goToPreviousStep);
           document.getElementById("to-step-5").addEventListener("click", function () {
             state.route.zip = (document.getElementById("route-zip").value || "").trim();
             if (!state.route.zip) {
@@ -817,7 +1136,7 @@
             setStep("quote-step-5");
           });
 
-          document.getElementById("step-5-back").addEventListener("click", function () { setStep("quote-step-4"); });
+          document.getElementById("step-5-back").addEventListener("click", goToPreviousStep);
           document.getElementById("to-step-6").addEventListener("click", function () {
             state.route.phone = (document.getElementById("route-phone").value || "").trim();
             if (!state.route.phone) {
@@ -832,7 +1151,7 @@
             setStep("quote-step-6");
           });
 
-          document.getElementById("step-6-back").addEventListener("click", function () { setStep("quote-step-5"); });
+          document.getElementById("step-6-back").addEventListener("click", goToPreviousStep);
           document.getElementById("to-step-7").addEventListener("click", function () {
             state.route.email = (document.getElementById("route-email").value || "").trim();
             if (!state.route.email) {
@@ -873,12 +1192,20 @@
             setStep("quote-step-7");
           });
 
-          document.getElementById("step-7-back").addEventListener("click", function () { setStep("quote-step-6"); });
+          document.getElementById("step-7-back").addEventListener("click", goToPreviousStep);
 
-          async function sendLeadNotification(payload) {
+          async function sendLeadNotification(payload, detailText) {
+            var summary = payload && payload.guide && payload.guide.summary ? payload.guide.summary : (payload && payload.guide && payload.guide.message ? payload.guide.message : "No additional details provided.");
+            var controller = typeof AbortController === "function" ? new AbortController() : null;
+            var timeoutId = setTimeout(function () {
+              if (controller) {
+                controller.abort();
+              }
+            }, 12000);
+
+            var response;
             try {
-              var summary = payload && payload.guide && payload.guide.summary ? payload.guide.summary : (payload && payload.guide && payload.guide.message ? payload.guide.message : "No additional details provided.");
-              await fetch("/api/send-lead-notification", {
+              response = await fetch("/api/send-lead-notification", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -889,12 +1216,34 @@
                   email: payload && payload.routing ? payload.routing.email : "",
                   summary: summary,
                   insuranceLine: payload && payload.guide ? payload.guide.category : "general",
-                  riskDetails: summary
-                })
+                  riskDetails: detailText || summary
+                }),
+                signal: controller ? controller.signal : undefined
               });
-            } catch (_) {
-              // Keep the user flow moving even if email dispatch fails.
+            } catch (error) {
+              if (error && error.name === "AbortError") {
+                throw new Error("Lead notification request timed out.");
+              }
+              throw error;
+            } finally {
+              clearTimeout(timeoutId);
             }
+
+            var result = null;
+            try {
+              result = await response.json();
+            } catch (_) {
+              result = null;
+            }
+
+            if (!response.ok) {
+              throw new Error(result && result.error ? result.error : "Lead notification request failed.");
+            }
+
+            return {
+              warning: result && result.warning ? result.warning : "",
+              confirmationSent: Boolean(result && result.confirmationSent)
+            };
           }
 
           document.getElementById("quote-intake-form").addEventListener("submit", async function (event) {
@@ -974,7 +1323,7 @@
 
             try {
               var backend = window.ShieldBackend;
-              if (backend && typeof backend.createLead === "function" && backend.isConfigured) {
+              if (backend && typeof backend.createLead === "function") {
                 await backend.createLead({
                   clientName: payload.routing.fullName,
                   email: payload.routing.email,
@@ -989,13 +1338,19 @@
                 saveLeadToLocalQueue(payload);
               }
 
-              await sendLeadNotification(payload);
+              var notification = await sendLeadNotification(payload, riskDetails);
 
               if (status) {
-                status.className = "mt-4 text-sm font-semibold text-emerald-600";
-                status.innerHTML = "Your plan was submitted successfully. To save time, you can <a href=\"/schedule/\" class=\"underline\">book an appointment now</a>.";
+                if (notification.warning || !notification.confirmationSent) {
+                  status.className = "mt-4 text-sm font-semibold text-amber-600";
+                  status.textContent = "Your plan was submitted, but the confirmation email could not be sent. Please call us if you need immediate assistance.";
+                } else {
+                  status.className = "mt-4 text-sm font-semibold text-emerald-600";
+                  status.innerHTML = "Your plan was submitted successfully. To save time, you can <a href=\"/schedule/\" class=\"underline\">book an appointment now</a>.";
+                }
               }
               state.submitted = true;
+              clearQuoteDraft();
               if (submitBtn) submitBtn.classList.add("hidden");
             } catch (err) {
               var savedLocally = false;
@@ -1005,12 +1360,25 @@
                 savedLocally = false;
               }
               if (savedLocally) {
-                await sendLeadNotification(payload);
-                if (status) {
-                  status.className = "mt-4 text-sm font-semibold text-emerald-600";
-                  status.innerHTML = "Your plan was saved successfully. To save time, you can <a href=\"/schedule/\" class=\"underline\">book an appointment now</a>.";
+                try {
+                  var queuedNotification = await sendLeadNotification(payload, riskDetails);
+                  if (status) {
+                    if (queuedNotification.warning || !queuedNotification.confirmationSent) {
+                      status.className = "mt-4 text-sm font-semibold text-amber-600";
+                      status.textContent = "Your plan was saved, but the confirmation email could not be sent. Please call us if you need immediate assistance.";
+                    } else {
+                      status.className = "mt-4 text-sm font-semibold text-emerald-600";
+                      status.innerHTML = "Your plan was saved successfully. To save time, you can <a href=\"/schedule/\" class=\"underline\">book an appointment now</a>.";
+                    }
+                  }
+                } catch (_) {
+                  if (status) {
+                    status.className = "mt-4 text-sm font-semibold text-amber-600";
+                    status.textContent = "Your plan was saved locally. Please call us if you need immediate assistance.";
+                  }
                 }
                 state.submitted = true;
+                clearQuoteDraft();
                 if (submitBtn) submitBtn.classList.add("hidden");
               } else if (status) {
                 status.className = "mt-4 text-sm font-semibold text-rose-600";
@@ -1027,20 +1395,28 @@
           document.querySelectorAll("a[href]").forEach(function (link) {
             var href = link.getAttribute("href") || "";
             if (!href || href.charAt(0) === "#" || href.indexOf("tel:") === 0 || href.indexOf("mailto:") === 0) return;
-            link.addEventListener("click", function (event) {
+            link.addEventListener("click", function () {
               if (href.indexOf("/quote") === 0) return;
               if (state.submitted) return;
               if (!hasQuoteProgress()) return;
-              var ok = window.confirm("Leaving this page will discard your quote progress. Do you want to continue?");
-              if (!ok) event.preventDefault();
+              saveQuoteDraft();
+              captureIncompleteQuote();
             });
           });
 
           window.addEventListener("beforeunload", function () {
+            saveQuoteDraft();
             captureIncompleteQuote();
           });
 
-          setStep("quote-step-1");
+          if (state.category && Array.isArray(state.bundle) && state.bundle.indexOf(state.category) === -1) {
+            state.bundle.unshift(state.category);
+          }
+          showResumeBanner();
+          updateInlineSuccessStates();
+          updateProgressPanel();
+          var initialStep = state.lastStep && stepIds.indexOf(state.lastStep) !== -1 ? state.lastStep : "quote-step-1";
+          setStep(initialStep);
         })();
         </script>
 

@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://www.shieldassurancellc.com/sitemap.xml
+Sitemap: https://www.shield-assurance.com/sitemap.xml

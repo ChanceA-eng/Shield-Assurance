@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
@@ -111,7 +111,7 @@
       })(window, document);
     </script>
   </head>
-<body class="antialiased">
+<body class="antialiased site-modern">
     <header id="site-header" class="fixed inset-x-0 top-0 z-50 bg-white/85 backdrop-blur-md border-b border-slate-200/70">
         <nav class="mx-auto flex max-w-7xl items-center justify-between px-6 py-3 lg:px-8">
             <a href="/" class="flex items-center gap-3"><span class="grid h-10 w-10 place-content-center rounded-xl bg-shieldNavy text-white"><i data-lucide="shield-check" class="h-5 w-5"></i></span><span class="display-font text-lg font-extrabold">Shield Assurance <span class="text-shieldBlue">LLC</span></span></a>
@@ -121,7 +121,7 @@
         <div id="mobile-menu" class="hidden border-t border-slate-200 bg-white px-6 py-4 md:hidden"><div class="grid gap-2 text-sm font-semibold text-slate-700"><a href="/services" class="rounded-md px-2 py-2 hover:bg-slate-100">Services</a><a href="/about" class="rounded-md px-2 py-2 hover:bg-slate-100">About</a><a href="/claims" class="rounded-md px-2 py-2 hover:bg-slate-100">Claims</a><a href="/contact" class="rounded-md px-2 py-2 hover:bg-slate-100">Contact</a></div></div>
     </header>
 
-    <main>
+    <main class="page-wrapper">
         <section class="border-b border-slate-100 bg-white py-16 md:py-20">
           <div class="mx-auto max-w-4xl px-6 text-center lg:px-8">
             <p class="text-sm font-bold uppercase tracking-[0.3em] text-shieldBlue">Claims Support</p>
@@ -234,8 +234,10 @@
           <div class="space-y-3">
             <h4 class="text-xs font-bold uppercase tracking-widest text-slate-200">Social</h4>
             <ul class="space-y-2 text-sm">
-              <li><a href="#" target="_blank" rel="noopener" data-site-linkedin-url class="hover:text-white transition">LinkedIn</a></li>
-              <li><a href="#" target="_blank" rel="noopener" data-site-facebook-url class="hover:text-white transition">Facebook</a></li>
+              <li><a href="#" target="_blank" rel="noopener" data-site-linkedin-url class="inline-flex items-center gap-2 hover:text-white transition"><i data-lucide="briefcase-business" class="h-4 w-4"></i><span>LinkedIn</span></a></li>
+              <li><a href="#" target="_blank" rel="noopener" data-site-facebook-url class="inline-flex items-center gap-2 hover:text-white transition"><i data-lucide="users" class="h-4 w-4"></i><span>Facebook</span></a></li>
+              <li><a href="#" target="_blank" rel="noopener" data-site-instagram-url class="inline-flex items-center gap-2 hover:text-white transition"><i data-lucide="camera" class="h-4 w-4"></i><span>Instagram</span></a></li>
+              <li><a href="#" target="_blank" rel="noopener" data-site-threads-url class="inline-flex items-center gap-2 hover:text-white transition"><i data-lucide="message-circle" class="h-4 w-4"></i><span>Threads</span></a></li>
             </ul>
           </div>
         </div>
@@ -249,7 +251,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-config.js?v=20260604-2"></script>
     <script src="backend.js?v=20260604-2"></script>
-    <script src="app.js?v=20260606-1"></script>
+    <script src="app.js?v=20260720-1"></script>
     <script>
     (function () {
       var carrierData = {

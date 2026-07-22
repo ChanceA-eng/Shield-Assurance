@@ -102,25 +102,37 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     const sendLeadNotification = async () => {
+        const summary = (messageField?.value || "").trim() || "No additional details provided.";
+        const response = await fetch("/api/send-lead-notification", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                fullName: form.querySelector("#full-name")?.value || "",
+                primaryLabel: coverageSelect?.value || "General Inquiry",
+                azZip: form.querySelector("#zip-code")?.value || "",
+                phone: form.querySelector("#phone")?.value || "",
+                email: form.querySelector("#email")?.value || "",
+                summary: summary,
+                riskDetails: summary,
+                insuranceLine: coverageSelect?.value || "general"
+            })
+        });
+
+        let payload = null;
         try {
-            const summary = (messageField?.value || "").trim() || "No additional details provided.";
-            await fetch("/api/send-lead-notification", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    fullName: form.querySelector("#full-name")?.value || "",
-                    primaryLabel: coverageSelect?.value || "General Inquiry",
-                    azZip: form.querySelector("#zip-code")?.value || "",
-                    phone: form.querySelector("#phone")?.value || "",
-                    email: form.querySelector("#email")?.value || "",
-                    summary: summary,
-                    riskDetails: summary,
-                    insuranceLine: coverageSelect?.value || "general"
-                })
-            });
+            payload = await response.json();
         } catch (_) {
-            // Do not block the user-facing submission flow if email fails.
+            payload = null;
         }
+
+        if (!response.ok) {
+            throw new Error(payload?.error || "Lead notification request failed.");
+        }
+
+        return {
+            warning: payload?.warning || "",
+            confirmationSent: Boolean(payload?.confirmationSent)
+        };
     };
 
     form.addEventListener("submit", async (event) => {
@@ -158,14 +170,21 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             }
 
-            await sendLeadNotification();
+            const notification = await sendLeadNotification();
 
             form.reset();
-            setStatus(
-                "Request received. To save time, you can <a href=\"/schedule/\" class=\"underline font-semibold text-white\">book an appointment now</a>.",
-                "text-emerald-300",
-                true
-            );
+            if (notification.warning || !notification.confirmationSent) {
+                setStatus(
+                    "Request received, but the confirmation email could not be sent. Please call us if you need immediate help.",
+                    "text-amber-300"
+                );
+            } else {
+                setStatus(
+                    "Request received. To save time, you can <a href=\"/schedule/\" class=\"underline font-semibold text-white\">book an appointment now</a>.",
+                    "text-emerald-300",
+                    true
+                );
+            }
         } catch (error) {
             setStatus(`Submission did not complete. Please call ${fallbackPhone} and we will assist immediately.`, "text-rose-300");
         } finally {

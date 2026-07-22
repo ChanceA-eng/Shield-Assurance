@@ -77,6 +77,7 @@
     };
 
     const CRM_ENDPOINT = "https://shield-assurance-crm-api.vercel.app/api/leads";
+    const LEAD_API_ENDPOINT = "/api/leads/create";
 
     const postWebhook = async (url, payload) => {
         const endpoint = safeUrl(url);
@@ -153,6 +154,41 @@
         } catch (error) {
             console.warn("CRM direct post failed.", error);
         }
+    };
+
+    const postLeadToApi = async (payload) => {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 15000);
+
+        let response;
+        try {
+            response = await fetch(LEAD_API_ENDPOINT, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload),
+                signal: controller.signal
+            });
+        } catch (error) {
+            if (error && error.name === "AbortError") {
+                throw new Error("Lead API request timed out.");
+            }
+            throw error;
+        } finally {
+            clearTimeout(timeoutId);
+        }
+
+        let result = null;
+        try {
+            result = await response.json();
+        } catch (_) {
+            result = null;
+        }
+
+        if (!response.ok) {
+            throw new Error((result && result.error) || "Lead API request failed.");
+        }
+
+        return result;
     };
 
     const normalizeLineBucket = (value) => {
@@ -777,54 +813,32 @@
             status: "New",
             intake_route: String(lead.intakeRoute || "general").trim(),
             source_page: String(lead.sourcePage || window.location.pathname || "contact"),
+            source: String(baseMetadata.crmSource || classification.sourceChannel || "website").trim() || "website",
+            needs_enrichment: baseMetadata.needs_enrichment !== false,
+            ai_status: baseMetadata.needs_enrichment === false ? "not_requested" : "pending",
+            lead_context: baseMetadata.lead_context && typeof baseMetadata.lead_context === "object"
+                ? baseMetadata.lead_context
+                : {
+                    routingContext: enrichedMetadata.routingContext,
+                    guide: enrichedMetadata.guide || {},
+                    assets: enrichedMetadata.assets || {}
+                },
+            producer_id: String(baseMetadata.producer_id || "").trim() || null,
             metadata: enrichedMetadata
         };
 
-        // Always attempt direct CRM post — fires regardless of Supabase config.
-        await postToCrm(lead, payload);
-
-        if (!client) {
-            return enqueueLocalLead(payload, "Supabase is not configured.");
-        }
-
-        const { error } = await client
-            .from("leads")
-            .insert(payload);
-
-        if (error) {
-            // Keep lead visibility in admin even when DB policies are misconfigured.
+        try {
+            const result = await postLeadToApi(payload);
+            const createdRow = toLeadRowShape(result && result.lead ? result.lead : {
+                id: `submitted-${Date.now()}`,
+                created_at: payload.submission_date,
+                ...payload
+            });
+            cacheSubmittedLead(createdRow);
+            return createdRow;
+        } catch (error) {
             return enqueueLocalLead(payload, error.message || String(error));
         }
-
-        const runtimeSettings = await getRuntimeSettings();
-        const webhookPayload = {
-            event: "new_lead",
-            lead: {
-                submission_date: payload.submission_date,
-                client_name: payload.client_name,
-                email: payload.email,
-                phone: payload.phone,
-                insurance_line: payload.insurance_line,
-                risk_details: payload.risk_details,
-                status: payload.status,
-                intake_route: payload.intake_route,
-                source_page: payload.source_page,
-                metadata: payload.metadata
-            }
-        };
-
-        await Promise.all([
-            postWebhook(runtimeSettings.crmWebhookUrl, webhookPayload),
-            postWebhook(runtimeSettings.notificationWebhookUrl, webhookPayload)
-        ]);
-
-        const createdRow = toLeadRowShape({
-            id: `submitted-${Date.now()}`,
-            created_at: payload.submission_date,
-            ...payload
-        });
-        cacheSubmittedLead(createdRow);
-        return createdRow;
     };
 
     const pushLeadToPipeline = async (lead) => {

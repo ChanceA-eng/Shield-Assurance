@@ -15,6 +15,7 @@ const SHIELD_DEFAULT_CONTENT = {
         linkedinUrl: "#",
         facebookUrl: "#",
         instagramUrl: "#",
+        threadsUrl: "#",
         googleBusinessUrl: "#",
         twitterUrl: "#"
     },
@@ -49,6 +50,14 @@ const SHIELD_DEFAULT_ANALYTICS_CONFIG = {
     posthogApiKey: "",
     posthogApiHost: "https://us.i.posthog.com",
     clarityProjectId: "x2wyyrdpna"
+};
+
+const SHIELD_SOCIAL_DEFAULTS = {
+    linkedin: SHIELD_DEFAULT_CONTENT.company.linkedinUrl,
+    facebook: SHIELD_DEFAULT_CONTENT.company.facebookUrl,
+    instagram: SHIELD_DEFAULT_CONTENT.company.instagramUrl,
+    threads: SHIELD_DEFAULT_CONTENT.company.threadsUrl,
+    twitter: SHIELD_DEFAULT_CONTENT.company.twitterUrl
 };
 
 const getAnalyticsConfig = () => {
@@ -733,6 +742,65 @@ const applyLink = (selector, href, textValue) => {
     });
 };
 
+const normalizeSocialUrl = (platform, value, fallbackUrl) => {
+    const raw = String(value || "").trim();
+    if (!raw || raw === "#") {
+        return String(fallbackUrl || "").trim() || "#";
+    }
+
+    if (/^https?:\/\//i.test(raw)) {
+        return raw;
+    }
+
+    if (/^www\./i.test(raw)) {
+        return `https://${raw}`;
+    }
+
+    if (platform === "instagram") {
+        const handle = raw.replace(/^@/, "").replace(/^instagram\.com\//i, "").replace(/^www\.instagram\.com\//i, "").split(/[/?#]/)[0].trim();
+        if (handle && !handle.includes(" ")) {
+            return `https://www.instagram.com/${handle}/`;
+        }
+    }
+
+    if (platform === "threads") {
+        const handle = raw.replace(/^@/, "").replace(/^threads\.net\/@/i, "").replace(/^www\.threads\.net\/@/i, "").split(/[/?#]/)[0].trim();
+        if (handle && !handle.includes(" ")) {
+            return `https://www.threads.net/@${handle}`;
+        }
+    }
+
+    if (platform === "facebook") {
+        const handle = raw.replace(/^@/, "").replace(/^facebook\.com\//i, "").replace(/^www\.facebook\.com\//i, "").split(/[/?#]/)[0].trim();
+        if (handle && !handle.includes(" ")) {
+            return `https://www.facebook.com/${handle}`;
+        }
+    }
+
+    if (platform === "linkedin") {
+        const cleaned = raw.replace(/^linkedin\.com\//i, "").replace(/^www\.linkedin\.com\//i, "").trim();
+        if (!cleaned.includes(" ")) {
+            if (cleaned.startsWith("company/") || cleaned.startsWith("in/")) {
+                return `https://www.linkedin.com/${cleaned.replace(/^\/+/, "")}`;
+            }
+            return `https://www.linkedin.com/company/${cleaned.replace(/^\/+/, "")}/`;
+        }
+    }
+
+    if (platform === "twitter") {
+        const handle = raw.replace(/^@/, "").replace(/^x\.com\//i, "").replace(/^twitter\.com\//i, "").replace(/^www\.(x|twitter)\.com\//i, "").split(/[/?#]/)[0].trim();
+        if (handle && !handle.includes(" ")) {
+            return `https://x.com/${handle}`;
+        }
+    }
+
+    if (/^[\w.-]+\.[a-z]{2,}(?:\/.*)?$/i.test(raw)) {
+        return `https://${raw}`;
+    }
+
+    return String(fallbackUrl || "").trim() || "#";
+};
+
 const toggleLinkVisibility = (selector, href) => {
     document.querySelectorAll(selector).forEach((node) => {
         if (!(node instanceof HTMLAnchorElement)) {
@@ -797,9 +865,26 @@ const applySiteContent = () => {
     applyText("[data-site-mailing-address]", company.mailingAddress);
     applyLink("[data-site-phone-link]", phoneLink);
     applyLink("[data-site-email-link]", emailLink);
-    toggleLinkVisibility("[data-site-linkedin-url]", company.linkedinUrl);
-    toggleLinkVisibility("[data-site-facebook-url]", company.facebookUrl);
-    toggleLinkVisibility("[data-site-twitter-url]", company.twitterUrl);
+    toggleLinkVisibility(
+        "[data-site-linkedin-url]",
+        normalizeSocialUrl("linkedin", company.linkedinUrl, SHIELD_SOCIAL_DEFAULTS.linkedin)
+    );
+    toggleLinkVisibility(
+        "[data-site-facebook-url]",
+        normalizeSocialUrl("facebook", company.facebookUrl, SHIELD_SOCIAL_DEFAULTS.facebook)
+    );
+    toggleLinkVisibility(
+        "[data-site-instagram-url]",
+        normalizeSocialUrl("instagram", company.instagramUrl, SHIELD_SOCIAL_DEFAULTS.instagram)
+    );
+    toggleLinkVisibility(
+        "[data-site-threads-url]",
+        normalizeSocialUrl("threads", company.threadsUrl, SHIELD_SOCIAL_DEFAULTS.threads)
+    );
+    toggleLinkVisibility(
+        "[data-site-twitter-url]",
+        normalizeSocialUrl("twitter", company.twitterUrl, SHIELD_SOCIAL_DEFAULTS.twitter)
+    );
 
     document.querySelectorAll("footer p").forEach((paragraph) => {
         const text = String(paragraph.textContent || "").trim();

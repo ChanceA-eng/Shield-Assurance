@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
@@ -26,8 +26,8 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="stylesheet" href="../styles.css">
 </head>
-<body data-skip-analytics="true" class="antialiased bg-slate-100 text-slate-900">
-    <main class="min-h-screen px-4 py-8 sm:px-6 lg:px-8">
+<body data-skip-analytics="true" class="antialiased site-modern bg-slate-100 text-slate-900">
+    <main class="page-wrapper min-h-screen px-4 py-8 sm:px-6 lg:px-8">
         <div class="mx-auto max-w-7xl space-y-8">
             <section class="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
                 <div class="flex items-center justify-between gap-3">
@@ -354,6 +354,10 @@
                                     <input id="instagram-url" name="instagramUrl" type="url" class="w-full rounded-xl border border-slate-300 px-4 py-3 focus:border-shieldBlue focus:outline-none">
                                 </div>
                                 <div>
+                                    <label for="threads-url" class="mb-1 block text-xs font-bold uppercase tracking-[0.2em] text-slate-500">Threads URL</label>
+                                    <input id="threads-url" name="threadsUrl" type="url" class="w-full rounded-xl border border-slate-300 px-4 py-3 focus:border-shieldBlue focus:outline-none">
+                                </div>
+                                <div>
                                     <label for="google-business-url" class="mb-1 block text-xs font-bold uppercase tracking-[0.2em] text-slate-500">Google Business Profile URL</label>
                                     <input id="google-business-url" name="googleBusinessUrl" type="url" class="w-full rounded-xl border border-slate-300 px-4 py-3 focus:border-shieldBlue focus:outline-none">
                                 </div>
@@ -463,7 +467,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../supabase-config.js"></script>
     <script src="../backend.js"></script>
-    <script src="../app.js?v=20260606-1"></script>
+    <script src="../app.js?v=20260720-1"></script>
     <script src="admin.js?v=20260606-2"></script>
 </body>
 </html>

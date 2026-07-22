@@ -200,6 +200,7 @@ document.addEventListener("DOMContentLoaded", () => {
         companyForm.linkedinUrl.value = state.content.company.linkedinUrl === "#" ? "" : state.content.company.linkedinUrl || "";
         companyForm.facebookUrl.value = state.content.company.facebookUrl === "#" ? "" : state.content.company.facebookUrl || "";
         companyForm.instagramUrl.value = state.content.company.instagramUrl === "#" ? "" : state.content.company.instagramUrl || "";
+        companyForm.threadsUrl.value = state.content.company.threadsUrl === "#" ? "" : state.content.company.threadsUrl || "";
         companyForm.googleBusinessUrl.value = state.content.company.googleBusinessUrl === "#" ? "" : state.content.company.googleBusinessUrl || "";
         companyForm.twitterUrl.value = state.content.company.twitterUrl === "#" ? "" : state.content.company.twitterUrl || "";
     };
@@ -814,6 +815,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 state.content.company.linkedinUrl = companyForm.linkedinUrl.value.trim() || "#";
                 state.content.company.facebookUrl = companyForm.facebookUrl.value.trim() || "#";
                 state.content.company.instagramUrl = companyForm.instagramUrl.value.trim() || "#";
+                state.content.company.threadsUrl = companyForm.threadsUrl.value.trim() || "#";
                 state.content.company.googleBusinessUrl = companyForm.googleBusinessUrl.value.trim() || "#";
                 state.content.company.twitterUrl = companyForm.twitterUrl.value.trim() || "#";
 

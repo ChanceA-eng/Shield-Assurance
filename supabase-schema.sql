@@ -20,10 +20,66 @@ create table if not exists public.leads (
     phone text not null,
     insurance_line text not null,
     risk_details text not null,
-    status text not null default 'New' check (status in ('New', 'In Progress', 'Quoted')),
+    status text not null default 'New' check (status in ('New', 'In Progress', 'Quoted', 'Enriched')),
     intake_route text,
     source_page text,
+    source text not null default 'website',
+    needs_enrichment boolean not null default true,
+    ai_status text not null default 'pending' check (ai_status in ('pending', 'processing', 'complete', 'failed', 'not_requested')),
+    lead_context jsonb not null default '{}'::jsonb,
+    producer_id text,
     metadata jsonb not null default '{}'::jsonb
+);
+
+alter table public.leads add column if not exists source text not null default 'website';
+alter table public.leads add column if not exists needs_enrichment boolean not null default true;
+alter table public.leads add column if not exists ai_status text not null default 'pending';
+alter table public.leads add column if not exists lead_context jsonb not null default '{}'::jsonb;
+alter table public.leads add column if not exists producer_id text;
+
+do $$
+begin
+    if exists (
+        select 1
+        from information_schema.table_constraints
+        where constraint_schema = 'public'
+          and table_name = 'leads'
+          and constraint_name = 'leads_status_check'
+    ) then
+        alter table public.leads drop constraint leads_status_check;
+    end if;
+end $$;
+
+alter table public.leads
+    add constraint leads_status_check
+    check (status in ('New', 'In Progress', 'Quoted', 'Enriched'));
+
+do $$
+begin
+    if exists (
+        select 1
+        from information_schema.table_constraints
+        where constraint_schema = 'public'
+          and table_name = 'leads'
+          and constraint_name = 'leads_ai_status_check'
+    ) then
+        alter table public.leads drop constraint leads_ai_status_check;
+    end if;
+end $$;
+
+alter table public.leads
+    add constraint leads_ai_status_check
+    check (ai_status in ('pending', 'processing', 'complete', 'failed', 'not_requested'));
+
+create table if not exists public.operations_log (
+    id bigint generated always as identity primary key,
+    created_at timestamptz not null default now(),
+    lead_id bigint references public.leads(id) on delete set null,
+    event_type text not null,
+    status text not null default 'success' check (status in ('success', 'warning', 'error')),
+    source text not null default 'website',
+    details text,
+    payload jsonb not null default '{}'::jsonb
 );
 
 create table if not exists public.integration_settings (
@@ -51,6 +107,7 @@ alter table public.site_content enable row level security;
 alter table public.leads enable row level security;
 alter table public.integration_settings enable row level security;
 alter table public.public_runtime_settings enable row level security;
+alter table public.operations_log enable row level security;
 
 -- Public read of site content so public pages can render dynamic fields.
 drop policy if exists "public can read site content" on public.site_content;
@@ -67,11 +124,13 @@ create policy "auth can write site content"
     using (true)
     with check (true);
 
--- Public can submit leads, admins can read/update.
+-- Browser users no longer write leads directly; lead creation now goes through the server-side API.
 drop policy if exists "public can create leads" on public.leads;
-create policy "public can create leads"
+
+drop policy if exists "auth can create leads" on public.leads;
+create policy "auth can create leads"
     on public.leads for insert
-    to anon, authenticated
+    to authenticated
     with check (true);
 
 drop policy if exists "auth can read leads" on public.leads;
@@ -111,6 +170,19 @@ create policy "public can read runtime settings"
 drop policy if exists "auth can write runtime settings" on public.public_runtime_settings;
 create policy "auth can write runtime settings"
     on public.public_runtime_settings for all
+    to authenticated
+    using (true)
+    with check (true);
+
+drop policy if exists "auth can read operations log" on public.operations_log;
+create policy "auth can read operations log"
+    on public.operations_log for select
+    to authenticated
+    using (true);
+
+drop policy if exists "auth can write operations log" on public.operations_log;
+create policy "auth can write operations log"
+    on public.operations_log for all
     to authenticated
     using (true)
     with check (true);
